@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -32,6 +34,12 @@ func Pods(ctx context.Context, client providers.ProviderClient) ([]Resource, err
 				})
 			}
 
+			jsonData, err := json.Marshal(pod)
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "Kubernetes",
 				Account:    client.Name,
@@ -42,6 +50,7 @@ func Pods(ctx context.Context, client providers.ProviderClient) ([]Resource, err
 				Cost:       0,
 				CreatedAt:  pod.CreationTimestamp.Time,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Tags:       tags,
 			})
 		}

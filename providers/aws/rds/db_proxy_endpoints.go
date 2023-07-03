@@ -2,13 +2,15 @@ package rds
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	log "github.com/sirupsen/logrus"
 	"github.com/tailwarden/komiser/models"
 	"github.com/tailwarden/komiser/providers"
-	"time"
 )
 
 func ProxyEndpoints(ctx context.Context, client providers.ProviderClient) ([]models.Resource, error) {
@@ -58,6 +60,12 @@ func ProxyEndpoints(ctx context.Context, client providers.ProviderClient) ([]mod
 				}
 			}
 
+			jsonData, err := json.Marshal(endpoint)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -67,6 +75,7 @@ func ProxyEndpoints(ctx context.Context, client providers.ProviderClient) ([]mod
 				Name:       _endpointName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/rds/home?region=%s#db-proxy-details:id=%s", client.AWSClient.Region, client.AWSClient.Region, *endpoint.DBProxyEndpointName),
 			})
 		}

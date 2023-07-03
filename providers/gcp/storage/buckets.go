@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -114,6 +115,12 @@ func Buckets(ctx context.Context, client providers.ProviderClient) ([]models.Res
 			monthlyCost = float64(bucketSizeInGB) * getPricingForGCPBuckets()[strings.ToUpper(bucket.StorageClass)]
 		}
 
+		jsonData, err := json.Marshal(bucket)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, models.Resource{
 			Provider:   "GCP",
 			Account:    client.Name,
@@ -122,6 +129,7 @@ func Buckets(ctx context.Context, client providers.ProviderClient) ([]models.Res
 			ResourceId: bucket.Name,
 			Region:     strings.ToLower(bucket.Location),
 			Tags:       tags,
+			Data:       jsonString,
 			Cost:       monthlyCost,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://console.cloud.google.com/storage/browser/%s?project=%s", bucket.Name, client.GCPClient.Credentials.ProjectID),

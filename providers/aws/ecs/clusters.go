@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -34,6 +35,13 @@ func Clusters(ctx context.Context, client ProviderClient) ([]Resource, error) {
 		}
 
 		for _, cluster := range output.ClusterArns {
+
+			jsonData, err := json.Marshal(cluster)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resourceArn := fmt.Sprintf("arn:aws:ecs:%s:%s:cluster/%s", client.AWSClient.Region, *accountId, cluster)
 
 			resources = append(resources, Resource{
@@ -44,6 +52,7 @@ func Clusters(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Region:     client.AWSClient.Region,
 				Name:       cluster,
 				Cost:       0,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ecs/home?#/clusters/%s", client.AWSClient.Region, cluster),
 			})

@@ -2,6 +2,7 @@ package servicecatalog
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -27,6 +28,13 @@ func Products(ctx context.Context, client providers.ProviderClient) ([]models.Re
 		}
 
 		for _, product := range output.ProductViewDetails {
+
+			jsonData, err := json.Marshal(product)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -36,6 +44,7 @@ func Products(ctx context.Context, client providers.ProviderClient) ([]models.Re
 				Name:       aws.ToString(product.ProductViewSummary.Name),
 				Cost:       0,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/servicecatalog/home?region=%s#/admin-products/%s", client.AWSClient.Region, client.AWSClient.Region, aws.ToString(product.ProductViewSummary.ProductId)),
 			})
 		}

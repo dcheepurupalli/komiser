@@ -124,13 +124,19 @@ func Instances(ctx context.Context, client providers.ProviderClient) ([]models.R
 							break
 						}
 
-						//log.Printf("Hourly cost EC2: %f", hourlyCost)
+						// log.Printf("Hourly cost EC2: %f", hourlyCost)
 
-				    }
+					}
 
 					monthlyCost = float64(hourlyUsage) * hourlyCost
 
 				}
+
+				jsonData, err := json.Marshal(instance)
+				if err != nil {
+					log.Printf("ERROR: Failed to marshall json: %v", err)
+				}
+				jsonString := string(jsonData)
 
 				resourceArn := fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", client.AWSClient.Region, *accountId, *instance.InstanceId)
 
@@ -145,6 +151,7 @@ func Instances(ctx context.Context, client providers.ProviderClient) ([]models.R
 					FetchedAt:  time.Now(),
 					Cost:       monthlyCost,
 					Tags:       tags,
+					Data:       jsonString,
 					Metadata: map[string]string{
 						"instanceType": string(instance.InstanceType),
 						"state":        string(instance.State.Name),

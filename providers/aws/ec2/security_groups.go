@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,6 +43,12 @@ func SecurityGroups(ctx context.Context, client ProviderClient) ([]Resource, err
 				})
 			}
 
+			jsonData, err := json.Marshal(sg)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resourceArn := fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", client.AWSClient.Region, *accountId, *sg.GroupId)
 
 			resources = append(resources, Resource{
@@ -54,6 +61,7 @@ func SecurityGroups(ctx context.Context, client ProviderClient) ([]Resource, err
 				Name:       *sg.GroupName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/ec2/home?region=%s#SecurityGroup:groupId=%s", client.AWSClient.Region, client.AWSClient.Region, *sg.GroupId),
 			})
 		}

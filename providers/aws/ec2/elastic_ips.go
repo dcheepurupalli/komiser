@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -85,6 +86,12 @@ func ElasticIps(ctx context.Context, client ProviderClient) ([]Resource, error) 
 				}
 			}
 
+			jsonData, err := json.Marshal(elasticIps)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resourceArn := fmt.Sprintf("arn:aws:ec2:%s:%s:elastic-ip/%s", client.AWSClient.Region, *accountId, *elasticIps.AllocationId)
 
 			resources = append(resources, Resource{
@@ -97,6 +104,7 @@ func ElasticIps(ctx context.Context, client ProviderClient) ([]Resource, error) 
 				Name:       *elasticIps.AllocationId,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/ec2/home?region=%s#ElasticIpDetails:AllocationId=%s", client.AWSClient.Region, client.AWSClient.Region, *elasticIps.AllocationId),
 			})
 		}

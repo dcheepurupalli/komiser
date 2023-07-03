@@ -2,7 +2,9 @@ package bigquery
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"cloud.google.com/go/bigquery"
@@ -59,6 +61,12 @@ func Tables(ctx context.Context, client providers.ProviderClient) ([]models.Reso
 				})
 			}
 
+			jsonData, err := json.Marshal(table)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "GCP",
 				Account:    client.Name,
@@ -68,6 +76,7 @@ func Tables(ctx context.Context, client providers.ProviderClient) ([]models.Reso
 				Name:       tableMetadata.Name,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://console.cloud.google.com/bigquery?project=%s&page=dataset&p=%s&d=%s", client.GCPClient.Credentials.ProjectID, client.GCPClient.Credentials.ProjectID, dataset.DatasetID),
 			})
 		}

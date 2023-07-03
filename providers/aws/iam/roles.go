@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -32,6 +33,12 @@ func Roles(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			})
 		}
 
+		jsonData, err := json.Marshal(o)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -42,6 +49,7 @@ func Roles(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			Cost:       0,
 			CreatedAt:  *o.CreateDate,
 			Tags:       tags,
+			Data:       jsonString,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/iamv2/home?region=%s#/roles/details/%s", client.AWSClient.Region, client.AWSClient.Region, *o.RoleName),
 		})

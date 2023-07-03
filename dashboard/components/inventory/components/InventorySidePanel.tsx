@@ -12,6 +12,9 @@ import {
 } from '../hooks/useInventory/types/useInventoryTypes';
 import InventoryTagWrapper from './InventoryTagWrapper';
 
+import { JsonView, darkStyles, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
+
 type InventorySidePanelProps = {
   closeModal: () => void;
   data: InventoryItem | undefined;
@@ -19,6 +22,7 @@ type InventorySidePanelProps = {
   page: Pages;
   updateTags: (action?: 'delete') => void;
   tags: Tag[] | [] | undefined;
+  json: string;
   handleChange: (newData: Partial<Tag>, id?: number) => void;
   removeTag: (id: number) => void;
   addNewTag: () => void;
@@ -36,6 +40,7 @@ function InventorySidePanel({
   page,
   updateTags,
   tags,
+  json,
   handleChange,
   removeTag,
   addNewTag,
@@ -112,7 +117,7 @@ function InventorySidePanel({
         </div>
 
         {/* Tabs */}
-        <SidepanelTabs goTo={goTo} page={page} tabs={['Tags']} />
+        <SidepanelTabs goTo={goTo} page={page} tabs={['Tags', 'Json']} />
 
         {/* Tags form */}
         <div>
@@ -239,6 +244,15 @@ function InventorySidePanel({
                 </div>
               </div>
             </>
+          )}
+
+          {page === 'json' && (
+            <div className="flex flex-col gap-6 pt-2">
+              <div className="flex flex-col gap-2">
+                <p className="text-black-900 font-medium">Provider</p>
+                  <JsonView data={JSON.parse(json)} shouldInitiallyExpand={(level) => true} style={defaultStyles} />
+              </div>
+             </div>
           )}
         </div>
       </Sidepanel>

@@ -2,6 +2,7 @@ package cloudwatch
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,6 +43,12 @@ func MetricStreams(ctx context.Context, client providers.ProviderClient) ([]mode
 				}
 			}
 
+			jsonData, err := json.Marshal(stream)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -51,6 +58,7 @@ func MetricStreams(ctx context.Context, client providers.ProviderClient) ([]mode
 				Name:       aws.ToString(stream.Name),
 				Cost:       0,
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/cloudwatch/home?region=%s#metric-streams:streamsList/%s", client.AWSClient.Region, client.AWSClient.Region, aws.ToString(stream.Name)),
 			})

@@ -35,6 +35,7 @@ function useInventory() {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<InventoryItem>();
   const [page, setPage] = useState<Pages>('tags');
+  const [json, setJson] = useState('');
   const [tags, setTags] = useState<Tag[]>();
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -473,13 +474,13 @@ function useInventory() {
   function openModal(inventoryItem: InventoryItem) {
     cleanModal();
     setData(inventoryItem);
-
     if (inventoryItem.tags && inventoryItem.tags.length > 0) {
       setTags(inventoryItem.tags);
     } else {
       setTags([{ key: '', value: '' }]);
     }
-
+    const str = JSON.stringify(inventoryItem.data, null, 2);
+    setJson(str);
     setIsOpen(true);
   }
 
@@ -758,6 +759,7 @@ function useInventory() {
     page,
     goTo,
     tags,
+    json,
     handleChange,
     addNewTag,
     removeTag,

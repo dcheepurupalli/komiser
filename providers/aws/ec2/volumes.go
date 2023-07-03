@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -56,6 +57,12 @@ func Volumes(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				})
 			}
 
+			jsonData, err := json.Marshal(volume)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			startOfMonth := utils.BeginningOfMonth(time.Now())
 			hourlyUsage := 0
 
@@ -94,6 +101,7 @@ func Volumes(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				CreatedAt:  *volume.CreateTime,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/ec2/home?region=%s#VolumeDetails:volumeId=%s", client.AWSClient.Region, client.AWSClient.Region, *volume.VolumeId),
 			})
 		}

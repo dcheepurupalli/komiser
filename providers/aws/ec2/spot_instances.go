@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -34,6 +35,12 @@ func SpotInstanceRequests(ctx context.Context, client providers.ProviderClient) 
 				})
 			}
 
+			jsonData, err := json.Marshal(spotInstance)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			cost := float64(0)
 			if spotInstance.SpotPrice != nil {
 				spotPrice, err := strconv.ParseFloat(*spotInstance.SpotPrice, 64)
@@ -52,6 +59,7 @@ func SpotInstanceRequests(ctx context.Context, client providers.ProviderClient) 
 				Name:       aws.ToString(spotInstance.SpotInstanceRequestId),
 				Cost:       cost,
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ec2/home?region=%s#SpotInstancesDetails:id=%s", client.AWSClient.Region, client.AWSClient.Region, aws.ToString(spotInstance.SpotInstanceRequestId)),
 				Metadata: map[string]string{

@@ -10,6 +10,7 @@ export type Provider =
   | 'tencent'
   | 'oci'
   | 'scaleway'
+  | 'github'
   | 'mongodbatlas';
 
 const providers = {
@@ -64,6 +65,10 @@ const providers = {
       label = 'MongoDB Atlas';
     }
 
+    if(arg.toLowerCase() === 'github'){
+      label = 'Github';
+    }
+
     return label;
   },
   providerImg(arg: Provider) {
@@ -115,6 +120,10 @@ const providers = {
 
     if (arg.toLowerCase() === 'mongodbatlas') {
       img = '/assets/img/providers/mongodbatlas.jpg';
+    }
+
+    if(arg.toLowerCase() === 'github'){
+      img = '/assets/img/providers/github.png';
     }
 
     return img;

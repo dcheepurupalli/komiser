@@ -12,6 +12,7 @@ type Config struct {
 	Scaleway     []ScalewayConfig     `toml:"scaleway"`
 	MongoDBAtlas []MongoDBAtlasConfig `toml:"mongodbatlas"`
 	GCP          []GCPConfig          `toml:"gcp"`
+	Github       []GithubConfig       `toml:"github"`
 	Postgres     PostgresConfig       `toml:"postgres,omitempty"`
 	SQLite       SQLiteConfig         `toml:"sqlite"`
 	Slack        SlackConfig          `toml:"slack"`
@@ -96,4 +97,9 @@ type GCPConfig struct {
 type SlackConfig struct {
 	Webhook   string `toml:"webhook"`
 	Reporting bool   `toml:"reporting"`
+}
+
+type GithubConfig struct {
+	Name        string `toml:"name"`
+	AccessToken string `toml:"accessToken"`
 }

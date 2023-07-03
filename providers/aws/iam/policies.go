@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -51,6 +52,12 @@ func Policies(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				configTags.Marker = outputPolicyTags.Marker
 			}
 
+			jsonData, err := json.Marshal(policy)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -61,6 +68,7 @@ func Policies(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Cost:       0,
 				CreatedAt:  *policy.CreateDate,
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/iam/home#/policies/%s", client.AWSClient.Region, *policy.Arn),
 			})

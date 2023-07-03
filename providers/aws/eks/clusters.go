@@ -2,6 +2,7 @@ package eks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -69,6 +70,12 @@ func KubernetesClusters(ctx context.Context, client ProviderClient) ([]Resource,
 				createdAt = *outputDescribe.Cluster.CreatedAt
 			}
 
+			jsonData, err := json.Marshal(cluster)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -78,6 +85,7 @@ func KubernetesClusters(ctx context.Context, client ProviderClient) ([]Resource,
 				Name:       cluster,
 				Cost:       monthlyCost,
 				Tags:       tags,
+				Data:       jsonString,
 				CreatedAt:  createdAt,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/eks/home?region=%s#/clusters/%s", client.AWSClient.Region, client.AWSClient.Region, cluster),

@@ -2,6 +2,7 @@ package s3
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -37,11 +38,11 @@ func Buckets(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			MetricName: aws.String("BucketSizeBytes"),
 			Namespace:  aws.String("AWS/S3"),
 			Dimensions: []types.Dimension{
-				types.Dimension{
+				{
 					Name:  aws.String("BucketName"),
 					Value: bucket.Name,
 				},
-				types.Dimension{
+				{
 					Name:  aws.String("StorageType"),
 					Value: aws.String("StandardStorage"),
 				},
@@ -88,6 +89,12 @@ func Buckets(ctx context.Context, client ProviderClient) ([]Resource, error) {
 
 		resourceArn := fmt.Sprintf("arn:aws:s3:::%s", *bucket.Name)
 
+		jsonData, err := json.Marshal(bucket)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -98,6 +105,7 @@ func Buckets(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			Cost:       monthlyCost,
 			CreatedAt:  *bucket.CreationDate,
 			Tags:       tags,
+			Data:       jsonString,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://s3.console.aws.amazon.com/s3/buckets/%s", *bucket.Name),
 		})

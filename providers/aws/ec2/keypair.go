@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -32,6 +33,12 @@ func KeyPairs(ctx context.Context, client providers.ProviderClient) ([]models.Re
 			})
 		}
 
+		jsonData, err := json.Marshal(keypair)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, models.Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -41,6 +48,7 @@ func KeyPairs(ctx context.Context, client providers.ProviderClient) ([]models.Re
 			Name:       aws.ToString(keypair.KeyName),
 			Cost:       0,
 			Tags:       tags,
+			Data:       jsonString,
 			CreatedAt:  *keypair.CreateTime,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ec2/v2/home?region=%s#KeyPairs:search=%s", client.AWSClient.Region, client.AWSClient.Region, aws.ToString(keypair.KeyPairId)),

@@ -2,6 +2,7 @@ package efs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -52,6 +53,12 @@ func ElasticFileStorage(ctx context.Context, client ProviderClient) ([]Resource,
 					}
 				}
 
+				jsonData, err := json.Marshal(filesystem)
+				if err != nil {
+					log.Printf("ERROR: Failed to marshall json: %v", err)
+				}
+				jsonString := string(jsonData)
+
 				monthlyCost := float64(filesystem.SizeInBytes.Value/1000000000) * 0.30
 
 				resources = append(resources, Resource{
@@ -63,6 +70,7 @@ func ElasticFileStorage(ctx context.Context, client ProviderClient) ([]Resource,
 					Name:       *filesystem.Name,
 					Cost:       monthlyCost,
 					Tags:       tags,
+					Data:       jsonString,
 					FetchedAt:  time.Now(),
 					Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/efs/home?region=%s#/file-systems/%s", client.AWSClient.Region, client.AWSClient.Region, *filesystem.Name),
 				})

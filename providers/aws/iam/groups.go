@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -23,6 +24,13 @@ func Groups(ctx context.Context, client ProviderClient) ([]Resource, error) {
 	}
 
 	for _, group := range output.Groups {
+
+		jsonData, err := json.Marshal(group)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -33,6 +41,7 @@ func Groups(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			Cost:       0,
 			CreatedAt:  *group.CreateDate,
 			FetchedAt:  time.Now(),
+			Data:       jsonString,
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/iamv2/home?region=%s#/groups/details/%s", client.AWSClient.Region, client.AWSClient.Region, *group.GroupName),
 		})
 

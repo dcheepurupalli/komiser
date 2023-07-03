@@ -2,6 +2,7 @@ package lambda
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -44,7 +45,6 @@ func Functions(ctx context.Context, client ProviderClient) ([]Resource, error) {
 					types.StatisticSum,
 				},
 			})
-
 			if err != nil {
 				log.Warnf("Couldn't fetch invocations metric for %s", *o.FunctionName)
 			}
@@ -97,6 +97,12 @@ func Functions(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				}
 			}
 
+			jsonData, err := json.Marshal(o)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -110,6 +116,7 @@ func Functions(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				},
 				FetchedAt: time.Now(),
 				Tags:      tags,
+				Data:      jsonString,
 				Link:      fmt.Sprintf("https://%s.console.aws.amazon.com/lambda/home?region=%s#/functions/%s", client.AWSClient.Region, client.AWSClient.Region, *o.FunctionName),
 			})
 		}

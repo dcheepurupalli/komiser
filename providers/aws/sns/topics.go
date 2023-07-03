@@ -2,6 +2,7 @@ package sns
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -64,7 +65,7 @@ func Topics(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				MetricName: aws.String("NumberOfMessagesPublished"),
 				Namespace:  aws.String("AWS/SNS"),
 				Dimensions: []types.Dimension{
-					types.Dimension{
+					{
 						Name:  aws.String("TopicName"),
 						Value: &topicName,
 					},
@@ -74,7 +75,6 @@ func Topics(ctx context.Context, client ProviderClient) ([]Resource, error) {
 					types.StatisticSum,
 				},
 			})
-
 			if err != nil {
 				log.Warnf("Couldn't fetch invocations metric for %s", *topic.TopicArn)
 			}
@@ -86,6 +86,12 @@ func Topics(ctx context.Context, client ProviderClient) ([]Resource, error) {
 
 			monthlyCost := (requests / 1000000) * 0.0000005
 
+			jsonData, err := json.Marshal(topic)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -95,6 +101,7 @@ func Topics(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Name:       *topic.TopicArn,
 				Cost:       monthlyCost,
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/sns/v3/home?region=%s#/topic/%s", client.AWSClient.Region, client.AWSClient.Region, *topic.TopicArn),
 			})

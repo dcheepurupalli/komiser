@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -38,6 +39,12 @@ func OIDCProviders(ctx context.Context, client ProviderClient) ([]Resource, erro
 			})
 		}
 
+		jsonData, err := json.Marshal(oidcprovider)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -47,6 +54,7 @@ func OIDCProviders(ctx context.Context, client ProviderClient) ([]Resource, erro
 			Name:       *outputProvider.Url,
 			Cost:       0,
 			Tags:       tags,
+			Data:       jsonString,
 			CreatedAt:  *outputProvider.CreateDate,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/iamv2/home?region=%s#/identity_providers/details/%s", client.AWSClient.Region, client.AWSClient.Region, *oidcprovider.Arn),

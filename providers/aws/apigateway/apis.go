@@ -2,6 +2,7 @@ package apigateway
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,7 +43,7 @@ func Apis(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			MetricName: aws.String("Count"),
 			Namespace:  aws.String("AWS/ApiGateway"),
 			Dimensions: []types.Dimension{
-				types.Dimension{
+				{
 					Name:  aws.String("ApiName"),
 					Value: api.Name,
 				},
@@ -52,7 +53,6 @@ func Apis(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				types.StatisticSum,
 			},
 		})
-
 		if err != nil {
 			log.Warnf("Couldn't fetch count metric for %s", *api.Name)
 		}
@@ -63,6 +63,12 @@ func Apis(ctx context.Context, client ProviderClient) ([]Resource, error) {
 		}
 
 		monthlyCost := (count / 1000000)
+
+		jsonData, err := json.Marshal(api)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
 
 		resources = append(resources, Resource{
 			Provider:   "AWS",
@@ -75,6 +81,7 @@ func Apis(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			Tags:       tags,
 			CreatedAt:  *api.CreatedDate,
 			FetchedAt:  time.Now(),
+			Data:       jsonString,
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/apigateway/home?region=%s#/apis/%s", client.AWSClient.Region, client.AWSClient.Region, *api.Id),
 		})
 	}

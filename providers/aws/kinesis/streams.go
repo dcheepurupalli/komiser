@@ -2,6 +2,7 @@ package kinesis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -25,6 +26,13 @@ func Streams(ctx context.Context, client ProviderClient) ([]Resource, error) {
 		}
 
 		for _, stream := range output.StreamSummaries {
+
+			jsonData, err := json.Marshal(stream)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -35,6 +43,7 @@ func Streams(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Cost:       0,
 				CreatedAt:  *stream.StreamCreationTimestamp,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/kinesis/home?region=%s#/streams/details/%s", client.AWSClient.Region, client.AWSClient.Region, *stream.StreamName),
 			})
 		}

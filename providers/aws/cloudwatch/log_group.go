@@ -2,6 +2,7 @@ package cloudwatch
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -23,6 +24,13 @@ func LogGroups(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			return resources, err
 		}
 		for _, group := range output.LogGroups {
+
+			jsonData, err := json.Marshal(group)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -31,6 +39,7 @@ func LogGroups(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Region:     client.AWSClient.Region,
 				Name:       aws.ToString(group.LogGroupName),
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:log-groups/log-group/%s", client.AWSClient.Region, client.AWSClient.Region, aws.ToString(group.LogGroupName)),
 			})
 		}

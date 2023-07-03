@@ -2,6 +2,7 @@ package rds
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -40,6 +41,12 @@ func Clusters(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				_clusterName = *cluster.DatabaseName
 			}
 
+			jsonData, err := json.Marshal(cluster)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -50,6 +57,7 @@ func Clusters(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Name:       _clusterName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/rds/home?region=%s#database:id=%s", client.AWSClient.Region, client.AWSClient.Region, *cluster.DBClusterIdentifier),
 			})
 		}

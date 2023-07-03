@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Resource struct {
 	Id         int64             `json:"id" bun:"id,pk,autoincrement"`
@@ -17,7 +19,8 @@ type Resource struct {
 	Metadata   map[string]string `json:"metadata"`
 	Tags       []Tag             `json:"tags" bun:"tags,default:'[]'"`
 	Link       string            `json:"link" bson:"link"`
-	Value      string            `bun:",scanonly"` //to be deprecated
+	Data       string            `json:"data" bun:"data,default:'{}'"`
+	Value      string            `bun:",scanonly"` // to be deprecated
 }
 
 type Tag struct {

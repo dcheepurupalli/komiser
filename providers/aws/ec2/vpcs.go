@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,6 +43,12 @@ func Vpcs(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				})
 			}
 
+			jsonData, err := json.Marshal(vpc)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resourceArn := fmt.Sprintf("arn:aws:ec2:%s:%s:vpc/%s", client.AWSClient.Region, *accountId, *vpc.VpcId)
 
 			resources = append(resources, Resource{
@@ -54,6 +61,7 @@ func Vpcs(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Name:       *vpc.VpcId,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/vpc/home?region=%s#VpcDetails:VpcId=%s", client.AWSClient.Region, client.AWSClient.Region, *vpc.VpcId),
 			})
 		}

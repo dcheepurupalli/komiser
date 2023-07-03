@@ -37,6 +37,7 @@ import (
 	"github.com/tailwarden/komiser/providers/civo"
 	do "github.com/tailwarden/komiser/providers/digitalocean"
 	"github.com/tailwarden/komiser/providers/gcp"
+	"github.com/tailwarden/komiser/providers/github"
 	k8s "github.com/tailwarden/komiser/providers/k8s"
 	linode "github.com/tailwarden/komiser/providers/linode"
 	"github.com/tailwarden/komiser/providers/mongodbatlas"
@@ -47,14 +48,16 @@ import (
 	"github.com/uptrace/bun"
 )
 
-var Version = "Unknown"
-var GoVersion = runtime.Version()
-var Buildtime = "Unknown"
-var Commit = "Unknown"
-var Os = runtime.GOOS
-var Arch = runtime.GOARCH
-var db *bun.DB
-var analytics utils.Analytics
+var (
+	Version   = "Unknown"
+	GoVersion = runtime.Version()
+	Buildtime = "Unknown"
+	Commit    = "Unknown"
+	Os        = runtime.GOOS
+	Arch      = runtime.GOARCH
+	db        *bun.DB
+	analytics utils.Analytics
+)
 
 func Exec(address string, port int, configPath string, telemetry bool, a utils.Analytics, regions []string, cmd *cobra.Command) error {
 	analytics = a
@@ -320,6 +323,8 @@ func triggerFetchingWorfklow(ctx context.Context, client providers.ProviderClien
 		mongodbatlas.FetchResources(ctx, client, db, telemetry, analytics)
 	case "GCP":
 		gcp.FetchResources(ctx, client, db, telemetry, analytics)
+	case "Github":
+		github.FetchResources(ctx, client, db, telemetry, analytics)
 	}
 }
 
@@ -347,6 +352,8 @@ func fetchResources(ctx context.Context, clients []providers.ProviderClient, reg
 			go triggerFetchingWorfklow(ctx, client, "MongoDBAtlas", telemetry, regions)
 		} else if client.GCPClient != nil {
 			go triggerFetchingWorfklow(ctx, client, "GCP", telemetry, regions)
+		} else if client.GithubClient != nil {
+			go triggerFetchingWorfklow(ctx, client, "Github", telemetry, regions)
 		}
 	}
 	return nil
@@ -358,7 +365,7 @@ func checkUpgrade() {
 		Version string `json:"tag_name"`
 	}
 
-	var myClient = &http.Client{Timeout: 5 * time.Second}
+	myClient := &http.Client{Timeout: 5 * time.Second}
 	r, err := myClient.Get(url)
 	if err != nil {
 		log.Warnf("Failed to check for new version: %s", err)
@@ -488,7 +495,6 @@ func hitSlackWebhook(viewName string, port int, viewId int, resources int, cost 
 	if err != nil {
 		log.Warn(err)
 	}
-
 }
 
 func checkingAlerts(ctx context.Context, cfg models.Config, telemetry bool, port int, alerts []models.Alert) {

@@ -51,6 +51,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-co-op/gocron v1.18.0
 	github.com/golang/protobuf v1.5.3
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/hashicorp/go-version v1.6.0
 	github.com/linode/linodego v1.12.0
 	github.com/mongodb-forks/digest v1.0.4
@@ -71,7 +72,7 @@ require (
 	github.com/uptrace/bun/driver/pgdriver v1.1.8
 	github.com/uptrace/bun/driver/sqliteshim v1.1.8
 	go.mongodb.org/atlas v0.23.1
-	golang.org/x/oauth2 v0.6.0
+	golang.org/x/oauth2 v0.8.0
 	golang.org/x/text v0.9.0
 	google.golang.org/api v0.114.0
 	k8s.io/apimachinery v0.26.1

@@ -54,8 +54,9 @@ export type InventoryItem = {
   resourceId: string;
   service: string;
   tags: Tag[] | [] | null;
+  data: {};
 };
-export type Pages = 'tags' | 'delete';
+export type Pages = 'tags' | 'delete' | 'json';
 
 export type View = {
   id: number;

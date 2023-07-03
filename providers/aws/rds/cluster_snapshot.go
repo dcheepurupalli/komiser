@@ -2,6 +2,7 @@ package rds
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -46,6 +47,12 @@ func ClusterSnapshots(ctx context.Context, client providers.ProviderClient) ([]m
 			hourlyCost := 0.0
 			monthlyCost := float64(hourlyUsage) * hourlyCost
 
+			jsonData, err := json.Marshal(clusterSnapshot)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -56,6 +63,7 @@ func ClusterSnapshots(ctx context.Context, client providers.ProviderClient) ([]m
 				Name:       _clusterSnapshotName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/rds/home?region=%s#snapshots-list:id=%s", client.AWSClient.Region, client.AWSClient.Region, *clusterSnapshot.DBClusterSnapshotIdentifier),
 			})
 		}

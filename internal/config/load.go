@@ -15,6 +15,7 @@ import (
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/civo/civogo"
 	"github.com/digitalocean/godo"
+	"github.com/google/go-github/github"
 	"github.com/linode/linodego"
 	"github.com/mongodb-forks/digest"
 	"github.com/oracle/oci-go-sdk/common"
@@ -325,6 +326,32 @@ func Load(configPath string, telemetry bool, analytics utils.Analytics) (*Config
 					Credentials: creds,
 				},
 				Name: account.Name,
+			})
+		}
+	}
+
+	if len(config.Github) > 0 {
+		// Initialize a Github client
+		for _, account := range config.Github {
+			tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: account.AccessToken})
+			oauth2Client := &http.Client{
+				Transport: &oauth2.Transport{
+					Source: tokenSource,
+				},
+			}
+
+			client := github.NewClient(oauth2Client)
+
+			clients = append(clients, providers.ProviderClient{
+				GithubClient: client,
+				Name:         account.Name,
+			})
+
+		}
+		if telemetry {
+			analytics.TrackEvent("connected_account", map[string]interface{}{
+				"type":     len(config.Github),
+				"provider": "Github",
 			})
 		}
 	}

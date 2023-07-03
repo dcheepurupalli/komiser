@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,6 +43,12 @@ func NetworkInterfaces(ctx context.Context, client ProviderClient) ([]Resource, 
 				})
 			}
 
+			jsonData, err := json.Marshal(iface)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resourceArn := fmt.Sprintf("arn:aws:ec2:%s:%s:network-interface/%s", client.AWSClient.Region, *accountId, *iface.NetworkInterfaceId)
 
 			resources = append(resources, Resource{
@@ -54,6 +61,7 @@ func NetworkInterfaces(ctx context.Context, client ProviderClient) ([]Resource, 
 				Name:       *iface.NetworkInterfaceId,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/ec2/home?region=%s#NetworkInterface:networkInterfaceId=%s", client.AWSClient.Region, client.AWSClient.Region, *iface.NetworkInterfaceId),
 			})
 		}

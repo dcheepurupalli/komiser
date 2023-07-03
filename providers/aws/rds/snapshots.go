@@ -2,6 +2,7 @@ package rds
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -34,6 +35,12 @@ func Snapshots(ctx context.Context, client providers.ProviderClient) ([]models.R
 
 			_snapshotName := *snapshot.DBSnapshotIdentifier
 
+			jsonData, err := json.Marshal(snapshot)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -43,6 +50,7 @@ func Snapshots(ctx context.Context, client providers.ProviderClient) ([]models.R
 				Name:       _snapshotName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/rds/home?region=%s#snapshot:id=%s", client.AWSClient.Region, client.AWSClient.Region, *snapshot.DBSnapshotIdentifier),
 			})
 		}

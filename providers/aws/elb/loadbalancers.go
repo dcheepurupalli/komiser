@@ -2,6 +2,7 @@ package elb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,6 +43,12 @@ func LoadBalancers(ctx context.Context, client ProviderClient) ([]Resource, erro
 			}
 		}
 
+		jsonData, err := json.Marshal(loadbalancer)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		startOfMonth := utils.BeginningOfMonth(time.Now())
 		hourlyUsage := 0
 		if (*loadbalancer.CreatedTime).Before(startOfMonth) {
@@ -60,6 +67,7 @@ func LoadBalancers(ctx context.Context, client ProviderClient) ([]Resource, erro
 			Name:       *loadbalancer.LoadBalancerName,
 			Cost:       monthlyCost,
 			Tags:       tags,
+			Data:       jsonString,
 			CreatedAt:  *loadbalancer.CreatedTime,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ec2/home?region=%s#/LoadBalancer:loadBalancerArn=%s", client.AWSClient.Region, client.AWSClient.Region, resourceArn),

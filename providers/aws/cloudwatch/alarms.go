@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/pricing"
-	"github.com/aws/aws-sdk-go-v2/service/pricing/types"
 	"strconv"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/pricing"
+	"github.com/aws/aws-sdk-go-v2/service/pricing/types"
 
 	log "github.com/sirupsen/logrus"
 
@@ -82,6 +83,12 @@ func Alarms(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				continue
 			}
 
+			jsonData, err := json.Marshal(alarm)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -92,6 +99,7 @@ func Alarms(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Cost:       costPerMonth,
 				Tags:       tags,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/cloudwatch/home?region=%s#alarmsV2:alarm/%s", client.AWSClient.Region, client.AWSClient.Region, *alarm.AlarmName),
 			})
 		}
