@@ -248,7 +248,6 @@ function InventorySidePanel({
           {page === 'json' && (
             <div className="flex flex-col gap-6 pt-2">
               <div className="flex flex-col gap-2">
-                <p className="font-medium text-black-900">Provider</p>
                 <JsonView
                   data={JSON.parse(json)}
                   shouldInitiallyExpand={level => true}
