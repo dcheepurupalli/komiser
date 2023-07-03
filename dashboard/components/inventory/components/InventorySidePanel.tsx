@@ -1,3 +1,5 @@
+import { JsonView, darkStyles, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 import formatNumber from '../../../utils/formatNumber';
 import providers from '../../../utils/providerHelper';
 import Button from '../../button/Button';
@@ -11,9 +13,6 @@ import {
   Tag
 } from '../hooks/useInventory/types/useInventoryTypes';
 import InventoryTagWrapper from './InventoryTagWrapper';
-
-import { JsonView, darkStyles, defaultStyles } from 'react-json-view-lite';
-import 'react-json-view-lite/dist/index.css';
 
 type InventorySidePanelProps = {
   closeModal: () => void;
@@ -249,10 +248,14 @@ function InventorySidePanel({
           {page === 'json' && (
             <div className="flex flex-col gap-6 pt-2">
               <div className="flex flex-col gap-2">
-                <p className="text-black-900 font-medium">Provider</p>
-                  <JsonView data={JSON.parse(json)} shouldInitiallyExpand={(level) => true} style={defaultStyles} />
+                <p className="font-medium text-black-900">Provider</p>
+                <JsonView
+                  data={JSON.parse(json)}
+                  shouldInitiallyExpand={level => true}
+                  style={defaultStyles}
+                />
               </div>
-             </div>
+            </div>
           )}
         </div>
       </Sidepanel>

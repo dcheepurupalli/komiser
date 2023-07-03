@@ -65,7 +65,7 @@ const providers = {
       label = 'MongoDB Atlas';
     }
 
-    if(arg.toLowerCase() === 'github'){
+    if (arg.toLowerCase() === 'github') {
       label = 'Github';
     }
 
@@ -122,7 +122,7 @@ const providers = {
       img = '/assets/img/providers/mongodbatlas.jpg';
     }
 
-    if(arg.toLowerCase() === 'github'){
+    if (arg.toLowerCase() === 'github') {
       img = '/assets/img/providers/github.png';
     }
 
