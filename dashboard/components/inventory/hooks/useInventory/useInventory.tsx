@@ -35,7 +35,7 @@ function useInventory() {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<InventoryItem>();
   const [page, setPage] = useState<Pages>('tags');
-  const [json, setJson] = useState('');
+  const [json, setJson] = useState({});
   const [tags, setTags] = useState<Tag[]>();
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -479,8 +479,7 @@ function useInventory() {
     } else {
       setTags([{ key: '', value: '' }]);
     }
-    const str = JSON.stringify(inventoryItem.data, null, 2);
-    setJson(str);
+    setJson(inventoryItem.data);
     setIsOpen(true);
   }
 
