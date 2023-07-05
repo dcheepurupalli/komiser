@@ -52,6 +52,7 @@ require (
 	github.com/go-co-op/gocron v1.18.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github/v53 v53.2.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/linode/linodego v1.12.0
 	github.com/mongodb-forks/digest v1.0.4
@@ -81,7 +82,9 @@ require (
 
 require (
 	cloud.google.com/go/longrunning v0.4.1 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8 // indirect
 	github.com/apache/arrow/go/v11 v11.0.0 // indirect
+	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 )
 

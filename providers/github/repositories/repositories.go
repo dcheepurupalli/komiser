@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v53/github"
 	"github.com/tailwarden/komiser/models"
 	. "github.com/tailwarden/komiser/models"
 	"github.com/tailwarden/komiser/providers"
@@ -27,8 +27,21 @@ func Repositories(ctx context.Context, client providers.ProviderClient) ([]model
 
 	for _, repository := range repositories {
 
+		secrets, _, err := client.GithubClient.Actions.ListRepoSecrets(ctx, client.Name, *repository.Name, nil)
+		if err != nil {
+			return resources, err
+		}
+
+		// Convert secrets to key-value pairs
+		secretPairs := make([]KeyValuePair, 0)
+		for _, secret := range secrets.Secrets {
+			secretPairs = append(secretPairs, KeyValuePair{
+				Key: secret.Name,
+			})
+		}
 		tags := make([]Tag, 0)
 		for _, tag := range repository.Topics {
+			fmt.Println("Tags", tag)
 			if strings.Contains(tag, ":") {
 				parts := strings.Split(tag, ":")
 				tags = append(tags, models.Tag{
@@ -61,6 +74,7 @@ func Repositories(ctx context.Context, client providers.ProviderClient) ([]model
 			Tags:       tags,
 			Data:       jsonString,
 			Link:       *repository.URL,
+			Secrets:    secretPairs,
 		})
 	}
 

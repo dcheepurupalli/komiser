@@ -39,6 +39,11 @@ export type Tag = {
   value: string;
 };
 
+export type Secrets = {
+  key: string;
+  value: string;
+};
+
 export type InventoryItem = {
   account: string;
   accountId: string;
@@ -55,8 +60,9 @@ export type InventoryItem = {
   service: string;
   tags: Tag[] | [] | null;
   data: {};
+  secrets: Secrets[];
 };
-export type Pages = 'tags' | 'delete' | 'json';
+export type Pages = 'tags' | 'delete' | 'json' | 'secrets';
 
 export type View = {
   id: number;

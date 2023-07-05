@@ -15,7 +15,7 @@ import (
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/civo/civogo"
 	"github.com/digitalocean/godo"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v53/github"
 	"github.com/linode/linodego"
 	"github.com/mongodb-forks/digest"
 	"github.com/oracle/oci-go-sdk/common"

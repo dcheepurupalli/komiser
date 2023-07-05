@@ -21,6 +21,7 @@ type Resource struct {
 	Link       string            `json:"link" bson:"link"`
 	Data       string            `json:"data" bun:"data,default:'{}'"`
 	Value      string            `bun:",scanonly"` // to be deprecated
+	Secrets    []KeyValuePair    `json:"secrets" bun:"secrets,default:'[]'"`
 }
 
 type Tag struct {
@@ -31,4 +32,10 @@ type Tag struct {
 type BulkUpdateTag struct {
 	Tags      []Tag `json:"tags"`
 	Resources []int `json:"resources"`
+}
+
+type KeyValuePair struct {
+	Key        string `json:"key"`
+	Value      string `json:"value"`
+	Visibility string `json:"visibility"`
 }

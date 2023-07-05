@@ -18,6 +18,7 @@ import {
   InventoryItem,
   InventoryStats,
   Pages,
+  Secrets,
   Tag,
   View
 } from './types/useInventoryTypes';
@@ -35,6 +36,7 @@ function useInventory() {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<InventoryItem>();
   const [page, setPage] = useState<Pages>('tags');
+  const [secrets, setSecrets] = useState<Secrets[]>();
   const [json, setJson] = useState({});
   const [tags, setTags] = useState<Tag[]>();
   const [loading, setLoading] = useState(false);
@@ -480,6 +482,12 @@ function useInventory() {
       setTags([{ key: '', value: '' }]);
     }
     setJson(inventoryItem.data);
+
+    if (inventoryItem.secrets && inventoryItem.secrets.length > 0) {
+      setSecrets(inventoryItem.secrets);
+    } else {
+      setSecrets([{ key: '', value: '' }]);
+    }
     setIsOpen(true);
   }
 
@@ -759,6 +767,7 @@ function useInventory() {
     goTo,
     tags,
     json,
+    secrets,
     handleChange,
     addNewTag,
     removeTag,

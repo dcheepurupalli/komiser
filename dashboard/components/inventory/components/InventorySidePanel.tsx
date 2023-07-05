@@ -10,7 +10,8 @@ import SidepanelTabs from '../../sidepanel/SidepanelTabs';
 import {
   InventoryItem,
   Pages,
-  Tag
+  Tag,
+  Secrets
 } from '../hooks/useInventory/types/useInventoryTypes';
 import InventoryTagWrapper from './InventoryTagWrapper';
 
@@ -22,6 +23,7 @@ type InventorySidePanelProps = {
   updateTags: (action?: 'delete') => void;
   tags: Tag[] | [] | undefined;
   json: string;
+  secrets: Secrets[] | [] | undefined;
   handleChange: (newData: Partial<Tag>, id?: number) => void;
   removeTag: (id: number) => void;
   addNewTag: () => void;
@@ -40,6 +42,7 @@ function InventorySidePanel({
   updateTags,
   tags,
   json,
+  secrets,
   handleChange,
   removeTag,
   addNewTag,
@@ -116,7 +119,11 @@ function InventorySidePanel({
         </div>
 
         {/* Tabs */}
-        <SidepanelTabs goTo={goTo} page={page} tabs={['Tags', 'Json']} />
+        <SidepanelTabs
+          goTo={goTo}
+          page={page}
+          tabs={['Tags', 'Json', 'Secrets']}
+        />
 
         {/* Tags form */}
         <div>
@@ -254,6 +261,21 @@ function InventorySidePanel({
                   style={defaultStyles}
                 />
               </div>
+            </div>
+          )}
+
+          {page === 'secrets' && (
+            <div className="flex flex-col gap-6 pt-2">
+              {secrets &&
+                secrets.map((tag, id) => (
+                  <div key={id} className="flex items-center gap-4">
+                    <InventoryTagWrapper
+                      tag={tag}
+                      id={id}
+                      handleChange={handleChange}
+                    />
+                  </div>
+                ))}
             </div>
           )}
         </div>
