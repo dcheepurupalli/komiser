@@ -16,6 +16,14 @@ import (
 
 const AWS_SERVICE_NAME_ASG = "AutoScalingGroup"
 
+type AutoScalingGroupClient interface {
+	DescribeAutoScalingGroups(
+		ctx context.Context,
+		params *autoscaling.DescribeAutoScalingGroupsInput,
+		optFns ...func(*autoscaling.Options),
+	) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
+}
+
 func AutoScalingGroups(ctx context.Context, clientProvider ProviderClient) ([]Resource, error) {
 	client := autoscaling.NewFromConfig(*clientProvider.AWSClient)
 

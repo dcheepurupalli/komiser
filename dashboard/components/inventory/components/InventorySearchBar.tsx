@@ -42,6 +42,7 @@ function InventorySearchBar({
             autoComplete="off"
             data-lpignore="true"
             data-form-type="other"
+            maxLength={64}
           />
           <div className="absolute right-4 top-[14px]">
             <ExportCSV setToast={setToast} />
