@@ -129,9 +129,8 @@ func sendRequest(method, url string, headers map[string]string, body []byte) (*h
 func GetRepoDependencyGraphSBOM(ctx context.Context, client providers.ProviderClient, repository *github.Repository) (string, error) {
 	// Set the necessary headers
 	headers := map[string]string{
-		"Accept":        "application/vnd.github+json",
-		"Authorization": "Bearer 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",
-		"X-GitHub-Api":  "2022-11-28",
+		"Accept":       "application/vnd.github+json",
+		"X-GitHub-Api": "2022-11-28",
 	}
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/dependency-graph/sbom", client.Name, *repository.Name)

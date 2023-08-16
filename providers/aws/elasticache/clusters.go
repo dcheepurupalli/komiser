@@ -107,6 +107,12 @@ func Clusters(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				}
 			}
 
+			jsonData, err := json.Marshal(cluster)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,

@@ -51,7 +51,6 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-co-op/gocron v1.18.0
 	github.com/golang/protobuf v1.5.3
-	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-github/v53 v53.2.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/linode/linodego v1.12.0
@@ -85,6 +84,7 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8 // indirect
 	github.com/apache/arrow/go/v11 v11.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.12 // indirect
+	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 )
 
