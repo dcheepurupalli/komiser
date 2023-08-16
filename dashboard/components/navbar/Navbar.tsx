@@ -9,7 +9,8 @@ function Navbar() {
   const router = useRouter();
   const nav = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Inventory', href: '/inventory' }
+    { label: 'Inventory', href: '/inventory' },
+    { label: 'Map', href: '/map' },
   ];
   return (
     <nav

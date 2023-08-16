@@ -23,6 +23,8 @@ type InventorySidePanelProps = {
   updateTags: (action?: 'delete') => void;
   tags: Tag[] | [] | undefined;
   json: string;
+  sbom: string;
+  variables: Secrets[] | [] | undefined;
   secrets: Secrets[] | [] | undefined;
   handleChange: (newData: Partial<Tag>, id?: number) => void;
   removeTag: (id: number) => void;
@@ -43,6 +45,8 @@ function InventorySidePanel({
   tags,
   json,
   secrets,
+  sbom,
+  variables,
   handleChange,
   removeTag,
   addNewTag,
@@ -120,9 +124,9 @@ function InventorySidePanel({
 
         {/* Tabs */}
         <SidepanelTabs
-          goTo={goTo}
-          page={page}
-          tabs={['Tags', 'Json', 'Secrets']}
+            goTo={goTo}
+            page={page}
+            tabs={['Tags', 'Json', 'Secrets', 'Variables', 'SBOM']}
         />
 
         {/* Tags form */}
@@ -264,10 +268,37 @@ function InventorySidePanel({
             </div>
           )}
 
+          {page === 'sbom' && (
+            <div className="flex flex-col gap-6 pt-2">
+              <div className="flex flex-col gap-2">
+                <JsonView
+                  data={JSON.parse(sbom)}
+                  shouldInitiallyExpand={level => true}
+                  style={defaultStyles}
+                />
+              </div>
+            </div>
+          )}
+
           {page === 'secrets' && (
             <div className="flex flex-col gap-6 pt-2">
               {secrets &&
                 secrets.map((tag, id) => (
+                  <div key={id} className="flex items-center gap-4">
+                    <InventoryTagWrapper
+                      tag={tag}
+                      id={id}
+                      handleChange={handleChange}
+                    />
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {page === 'variables' && (
+            <div className="flex flex-col gap-6 pt-2">
+              {variables &&
+                variables.map((tag, id) => (
                   <div key={id} className="flex items-center gap-4">
                     <InventoryTagWrapper
                       tag={tag}

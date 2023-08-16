@@ -22,6 +22,8 @@ type Resource struct {
 	Data       string            `json:"data" bun:"data,default:'{}'"`
 	Value      string            `bun:",scanonly"` // to be deprecated
 	Secrets    []KeyValuePair    `json:"secrets" bun:"secrets,default:'[]'"`
+	Variables  []KeyValuePair    `json:"variables" bun:"variables,default:'[]'"`
+	SBOM       string            `json:"sbom" bun:"sbom,default:'{}'"`
 }
 
 type Tag struct {

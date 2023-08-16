@@ -59,6 +59,53 @@ var (
 	analytics utils.Analytics
 )
 
+type Data struct {
+	VpcId               string `json:"VpcId"`
+	SubnetId            string `json:"SubnetId"`
+	OwnerId             string `json:"OwnerId"`
+	AvailabilityZone    string `json:"AvailabilityZone"`
+	BlockDeviceMappings []struct {
+		Ebs struct {
+			Status              string    `json:"Status"`
+			VolumeID            string    `json:"VolumeId"`
+			AttachTime          time.Time `json:"AttachTime"`
+			DeleteOnTermination bool      `json:"DeleteOnTermination"`
+		} `json:"Ebs"`
+		DeviceName string `json:"DeviceName"`
+	}
+	IamInstanceProfile struct {
+		Id  string `json:"Id"`
+		Arn string `json:"Arn"`
+	}
+	NetworkInterfaces []struct {
+		Attachment struct {
+			AttachmentId string `json:"AttachmentId"`
+		}
+		NetworkInterfaceId string `json:"NetworkInterfaceId"`
+		IamInstanceProfile struct {
+			Id  string `json:"Id"`
+			Arn string `json:"Arn"`
+		}
+	}
+	SecurityGroups []struct {
+		GroupId   string `json:"GroupId"`
+		GroupName string `json:"GroupName"`
+	}
+}
+
+type DataRDS struct {
+	KmsKeyId          string `json:"KmsKeyId"`
+	VpcSecurityGroups []struct {
+		Status             string `json:"Status"`
+		VpcSecurityGroupId string `json:"VpcSecurityGroupId"`
+	}
+}
+
+type Tag struct {
+	Key   string `json:"Key"`
+	Value string `json:"Value"`
+}
+
 func Exec(address string, port int, configPath string, telemetry bool, a utils.Analytics, regions []string, cmd *cobra.Command) error {
 	analytics = a
 
@@ -122,6 +169,8 @@ func Exec(address string, port int, configPath string, telemetry bool, a utils.A
 
 	go checkUpgrade()
 
+	go updateEdgesFromResources(ctx)
+
 	err = runServer(address, port, telemetry, *cfg)
 	if err != nil {
 		return err
@@ -141,6 +190,159 @@ func checkIfAlertsExist(ctx context.Context) (bool, []models.Alert) {
 		return true, alerts
 	}
 	return false, alerts
+}
+
+func updateEdgesFromResources(ctx context.Context) error {
+	resources := make([]models.Resource, 0)
+
+	err := db.NewRaw("SELECT * FROM resources WHERE provider LIKE '%AWS%' AND account like '%scdt-poc%'").Scan(ctx, &resources)
+	if err != nil {
+		log.WithError(err).Error("scan failed")
+	}
+
+	for _, resource := range resources {
+		if resource.Service == "EC2" {
+
+			var data Data
+			err := json.Unmarshal([]byte(resource.Data), &data)
+			if err != nil {
+				fmt.Println("Error parsing JSON:", err)
+				return err
+			}
+			vpcID := data.VpcId
+			subnetID := data.SubnetId
+			volumeID := data.BlockDeviceMappings[0].Ebs.VolumeID
+			networkInterfaceID := data.NetworkInterfaces[0].NetworkInterfaceId
+			iamProfileID := data.NetworkInterfaces[0].IamInstanceProfile.Arn
+			securityGroupID := data.SecurityGroups[0].GroupId
+
+			vpcIdResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", vpcID)).Scan(ctx, &vpcIdResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			subnetIdResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", subnetID)).Scan(ctx, &subnetIdResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			volumeIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", volumeID)).Scan(ctx, &volumeIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			networkInterfaceIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", networkInterfaceID)).Scan(ctx, &networkInterfaceIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			iamProfileIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", iamProfileID)).Scan(ctx, &iamProfileIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			securityGroupIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE resource_id LIKE ?", fmt.Sprintf("%%%s%%", securityGroupID)).Scan(ctx, &securityGroupIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   subnetIdResource[0].Id,
+				Name:   "Subnet",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   vpcIdResource[0].Id,
+				Name:   "VPC",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   volumeIDResource[0].Id,
+				Name:   "Volume",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   networkInterfaceIDResource[0].Id,
+				Name:   "Network Interface",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   iamProfileIDResource[0].Id,
+				Name:   "IAM",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			// For loop to add all security groups
+			for _, securityGroup := range securityGroupIDResource {
+				_, _ = db.NewInsert().Model(&models.Edges{
+					Source: resource.Id,
+					Dest:   securityGroup.Id,
+					Name:   "Security Group",
+				}).Exec(ctx)
+			}
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+		}
+		// if resource.Service == "RDS" {
+		// 	var data Data
+		// 	err := json.Unmarshal([]byte(resource.Data), &data)
+		// 	if err != nil {
+		// 		fmt.Println("Error parsing JSON:", err)
+		// 		return err
+		// 	}
+
+		// 	securityGroupID := data.SecurityGroups[0].GroupId
+
+		// 	securityGroupIDResource := make([]models.Resource, 0)
+		// 	err = db.NewRaw("SELECT * FROM resources WHERE resource_id LIKE ?", fmt.Sprintf("%%%s%%", securityGroupID)).Scan(ctx, &securityGroupIDResource)
+		// 	if err != nil {
+		// 		log.WithError(err).Error("scan failed")
+		// 	}
+
+		// 	for _, securityGroup := range securityGroupIDResource {
+		// 		_, _ = db.NewInsert().Model(&models.Edges{
+		// 			Source: resource.Id,
+		// 			Dest:   securityGroup.Id,
+		// 			Name:   "Security Group",
+		// 		}).Exec(ctx)
+		// 	}
+
+		// }
+	}
+
+	return nil
 }
 
 func loggingMiddleware() gin.HandlerFunc {

@@ -95,6 +95,26 @@ const settingsService = {
     }
   },
 
+  async getAllGlobalResources() {
+    try {
+      const res = await fetch(`${BASE_URL}/global/resources`, settings('GET'));
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      return Error;
+    }
+  },
+
+  async getAllEdges() {
+    try {
+      const res = await fetch(`${BASE_URL}/global/edges`, settings('GET'));
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      return Error;
+    }
+  },
+
   async getCostExplorer(payload: string) {
     try {
       const res = await fetch(

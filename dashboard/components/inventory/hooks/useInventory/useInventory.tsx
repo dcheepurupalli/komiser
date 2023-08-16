@@ -38,6 +38,8 @@ function useInventory() {
   const [page, setPage] = useState<Pages>('tags');
   const [secrets, setSecrets] = useState<Secrets[]>();
   const [json, setJson] = useState({});
+  const [variables, setVariables] = useState<Secrets[]>();
+  const [sbom, setSBOM] = useState({} as any);
   const [tags, setTags] = useState<Tag[]>();
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -482,12 +484,20 @@ function useInventory() {
       setTags([{ key: '', value: '' }]);
     }
     setJson(inventoryItem.data);
+    setSBOM(inventoryItem.sbom);
 
     if (inventoryItem.secrets && inventoryItem.secrets.length > 0) {
       setSecrets(inventoryItem.secrets);
     } else {
       setSecrets([{ key: '', value: '' }]);
     }
+
+    if (inventoryItem.variables && inventoryItem.variables.length > 0) {
+      setVariables(inventoryItem.variables);
+    } else {
+      setVariables([{ key: '', value: '' }]);
+    }
+
     setIsOpen(true);
   }
 
@@ -768,6 +778,8 @@ function useInventory() {
     tags,
     json,
     secrets,
+    variables,
+    sbom,
     handleChange,
     addNewTag,
     removeTag,

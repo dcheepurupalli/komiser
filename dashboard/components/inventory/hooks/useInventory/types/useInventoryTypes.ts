@@ -61,8 +61,10 @@ export type InventoryItem = {
   tags: Tag[] | [] | null;
   data: {};
   secrets: Secrets[];
+  variables: Secrets[];
+  sbom: {};
 };
-export type Pages = 'tags' | 'delete' | 'json' | 'secrets';
+export type Pages = 'tags' | 'delete' | 'json' | 'secrets' | 'varaibles' | 'sbom';
 
 export type View = {
   id: number;
