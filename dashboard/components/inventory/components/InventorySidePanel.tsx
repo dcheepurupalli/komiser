@@ -124,9 +124,9 @@ function InventorySidePanel({
 
         {/* Tabs */}
         <SidepanelTabs
-            goTo={goTo}
-            page={page}
-            tabs={['Tags', 'Json', 'Secrets', 'Variables', 'SBOM']}
+          goTo={goTo}
+          page={page}
+          tabs={['Tags', 'Json', 'Secrets', 'Variables', 'SBOM']}
         />
 
         {/* Tags form */}

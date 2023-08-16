@@ -21,12 +21,12 @@ function InventorySearchBar({
       {!error && (
         <div className="relative rounded-lg rounded-b-none">
           {!query ? (
-            <div className="absolute top-[1.625rem] left-6">
+            <div className="absolute left-6 top-[1.625rem]">
               <SearchIcon width={16} height={16} />
             </div>
           ) : (
             <div
-              className="absolute top-[1.7rem] left-6 cursor-pointer"
+              className="absolute left-6 top-[1.7rem] cursor-pointer"
               onClick={() => setQuery('')}
             >
               <CloseIcon width={16} height={16} />
@@ -43,7 +43,7 @@ function InventorySearchBar({
             data-lpignore="true"
             data-form-type="other"
           />
-          <div className="absolute top-[14px] right-4">
+          <div className="absolute right-4 top-[14px]">
             <ExportCSV setToast={setToast} />
           </div>
         </div>

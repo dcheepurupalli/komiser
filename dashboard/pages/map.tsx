@@ -4,20 +4,20 @@ import InfrastructureLayout from '../components/infrastructure/components/Infras
 import InfrastructureGraph from '../components/infrastructure/components/InfrastructureGraph';
 import useInfrastructure from '../components/infrastructure/hooks/useInfrastructure';
 
-
-
 export default function Infrastructure() {
-    const { loading, inventory, toast, setToast, edges } = useInfrastructure();
-    return (
-        <div>
-            <Head>
-                <title>Infrastructure - Komiser</title>
-                <meta name="description" content="Infrastructure - Komiser" />
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
-            <InfrastructureLayout>
-                {inventory && inventory.length > 0 && <InfrastructureGraph vertices={inventory} edges={edges} />}
-            </InfrastructureLayout>
-        </div>
-    );
+  const { loading, inventory, toast, setToast, edges } = useInfrastructure();
+  return (
+    <div>
+      <Head>
+        <title>Infrastructure - Komiser</title>
+        <meta name="description" content="Infrastructure - Komiser" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <InfrastructureLayout>
+        {inventory && inventory.length > 0 && (
+          <InfrastructureGraph vertices={inventory} edges={edges} />
+        )}
+      </InfrastructureLayout>
+    </div>
+  );
 }
