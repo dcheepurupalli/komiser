@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -33,6 +34,12 @@ func PlacementGroups(ctx context.Context, client providers.ProviderClient) ([]mo
 			})
 		}
 
+		jsonData, err := json.Marshal(placementGroup)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, models.Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -41,6 +48,7 @@ func PlacementGroups(ctx context.Context, client providers.ProviderClient) ([]mo
 			Region:     client.AWSClient.Region,
 			Name:       aws.ToString(placementGroup.GroupName),
 			Tags:       tags,
+			Data:       jsonString,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ec2/v2/home?region=%s#PlacementGroups:sort=groupName", client.AWSClient.Region, client.AWSClient.Region),
 		})

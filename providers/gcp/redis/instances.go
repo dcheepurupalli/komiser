@@ -2,7 +2,9 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"time"
 
@@ -57,6 +59,13 @@ RegionsLoop:
 			re := regexp.MustCompile(`instances\/(.+)$`)
 			redisInstanceName := re.FindStringSubmatch(redis.Name)[1]
 
+			jsonData, err := json.Marshal(redis)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+			
+
 			resources = append(resources, models.Resource{
 				Provider:   "GCP",
 				Account:    client.Name,
@@ -67,6 +76,7 @@ RegionsLoop:
 				CreatedAt:  redis.CreateTime.AsTime(),
 				Cost:       0,
 				FetchedAt:  time.Now(),
+				Data: 		jsonString,
 				Link:       fmt.Sprintf("https://console.cloud.google.com/memorystore/redis/locations/%s/instances/%s/details/overview?project=%s", regionName, redisInstanceName, client.GCPClient.Credentials.ProjectID),
 			})
 

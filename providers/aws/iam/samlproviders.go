@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -47,6 +48,12 @@ func SamlProviders(ctx context.Context, client ProviderClient) ([]Resource, erro
 			configTags.Marker = outputSamlProviderTags.Marker
 		}
 
+		jsonData, err := json.Marshal(samlprovider)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -57,6 +64,7 @@ func SamlProviders(ctx context.Context, client ProviderClient) ([]Resource, erro
 			Cost:       0,
 			CreatedAt:  *samlprovider.CreateDate,
 			Tags:       tags,
+			Data:       jsonString,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/iamv2/home?region=%s#/identity_providers/details/%s", client.AWSClient.Region, client.AWSClient.Region, *samlprovider.Arn),
 		})

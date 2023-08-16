@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"time"
@@ -49,6 +50,12 @@ func Functions(ctx context.Context, client providers.ProviderClient) ([]models.R
 
 		}
 
+		jsonData, err := json.Marshal(function)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, models.Resource{
 			Provider:   "GCP",
 			Account:    client.Name,
@@ -61,6 +68,7 @@ func Functions(ctx context.Context, client providers.ProviderClient) ([]models.R
 				"Last Modified": function.UpdateTime,
 			},
 			FetchedAt: time.Now(),
+			Data:      jsonString,
 			Link:      fmt.Sprintf("https://console.cloud.google.com/functions/details/%s/%s?env=%sproject=%s", functionRegion, functionName, generation, client.GCPClient.Credentials.ProjectID),
 		})
 

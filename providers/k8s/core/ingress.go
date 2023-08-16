@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -32,6 +34,12 @@ func Ingress(ctx context.Context, client providers.ProviderClient) ([]Resource, 
 				})
 			}
 
+			jsonData, err := json.Marshal(ingress)
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "Kubernetes",
 				Account:    client.Name,
@@ -42,6 +50,7 @@ func Ingress(ctx context.Context, client providers.ProviderClient) ([]Resource, 
 				Cost:       0,
 				CreatedAt:  ingress.CreationTimestamp.Time,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Tags:       tags,
 			})
 		}

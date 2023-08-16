@@ -2,6 +2,7 @@ package cloudfront
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -39,7 +40,7 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 				MetricName: aws.String("BytesDownloaded"),
 				Namespace:  aws.String("AWS/CloudFront"),
 				Dimensions: []types.Dimension{
-					types.Dimension{
+					{
 						Name:  aws.String("DistributionId"),
 						Value: distribution.Id,
 					},
@@ -49,7 +50,6 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 					types.StatisticSum,
 				},
 			})
-
 			if err != nil {
 				log.Warnf("Couldn't fetch invocations metric for %s", *distribution.Id)
 			}
@@ -65,7 +65,7 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 				MetricName: aws.String("BytesUploaded"),
 				Namespace:  aws.String("AWS/CloudFront"),
 				Dimensions: []types.Dimension{
-					types.Dimension{
+					{
 						Name:  aws.String("DistributionId"),
 						Value: distribution.Id,
 					},
@@ -75,7 +75,6 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 					types.StatisticSum,
 				},
 			})
-
 			if err != nil {
 				log.Warnf("Couldn't fetch invocations metric for %s", *distribution.Id)
 			}
@@ -91,7 +90,7 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 				MetricName: aws.String("Requests"),
 				Namespace:  aws.String("AWS/CloudFront"),
 				Dimensions: []types.Dimension{
-					types.Dimension{
+					{
 						Name:  aws.String("DistributionId"),
 						Value: distribution.Id,
 					},
@@ -101,7 +100,6 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 					types.StatisticSum,
 				},
 			})
-
 			if err != nil {
 				log.Warnf("Couldn't fetch invocations metric for %s", *distribution.Id)
 			}
@@ -137,6 +135,12 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 				}
 			}
 
+			jsonData, err := json.Marshal(distribution)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -147,6 +151,7 @@ func Distributions(ctx context.Context, client ProviderClient) ([]Resource, erro
 				Cost:       monthlyCost,
 				Tags:       tags,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/cloudfront/v3/home?region=%s#/distributions/%s", client.AWSClient.Region, client.AWSClient.Region, *distribution.Id),
 			})
 		}

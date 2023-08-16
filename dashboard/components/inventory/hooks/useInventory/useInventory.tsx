@@ -18,6 +18,7 @@ import {
   InventoryItem,
   InventoryStats,
   Pages,
+  Secrets,
   Tag,
   View
 } from './types/useInventoryTypes';
@@ -35,6 +36,10 @@ function useInventory() {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<InventoryItem>();
   const [page, setPage] = useState<Pages>('tags');
+  const [secrets, setSecrets] = useState<Secrets[]>();
+  const [json, setJson] = useState({});
+  const [variables, setVariables] = useState<Secrets[]>();
+  const [sbom, setSBOM] = useState({} as any);
   const [tags, setTags] = useState<Tag[]>();
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -473,11 +478,24 @@ function useInventory() {
   function openModal(inventoryItem: InventoryItem) {
     cleanModal();
     setData(inventoryItem);
-
     if (inventoryItem.tags && inventoryItem.tags.length > 0) {
       setTags(inventoryItem.tags);
     } else {
       setTags([{ key: '', value: '' }]);
+    }
+    setJson(inventoryItem.data);
+    setSBOM(inventoryItem.sbom);
+
+    if (inventoryItem.secrets && inventoryItem.secrets.length > 0) {
+      setSecrets(inventoryItem.secrets);
+    } else {
+      setSecrets([{ key: '', value: '' }]);
+    }
+
+    if (inventoryItem.variables && inventoryItem.variables.length > 0) {
+      setVariables(inventoryItem.variables);
+    } else {
+      setVariables([{ key: '', value: '' }]);
     }
 
     setIsOpen(true);
@@ -758,6 +776,10 @@ function useInventory() {
     page,
     goTo,
     tags,
+    json,
+    secrets,
+    variables,
+    sbom,
     handleChange,
     addNewTag,
     removeTag,

@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -33,6 +34,12 @@ func Subnets(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				})
 			}
 
+			jsonData, err := json.Marshal(subnet)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -43,6 +50,7 @@ func Subnets(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Name:       *subnet.SubnetId,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/vpc/home?region=%s#SubnetDetails:subnetId=%s", client.AWSClient.Region, client.AWSClient.Region, *subnet.SubnetId),
 			})
 		}

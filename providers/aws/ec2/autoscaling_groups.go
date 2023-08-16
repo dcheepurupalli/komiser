@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -62,6 +63,12 @@ func (d ASGDiscoverer) Discover() ([]Resource, error) {
 				})
 			}
 
+			jsonData, err := json.Marshal(asg)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    d.AccountName,
@@ -72,6 +79,7 @@ func (d ASGDiscoverer) Discover() ([]Resource, error) {
 				Name:       *asg.AutoScalingGroupName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link: fmt.Sprintf(
 					"https://%s.console.aws.amazon.com/ec2/home?region=%s#AutoScalingGroupDetails:id=%s",
 					d.Region,

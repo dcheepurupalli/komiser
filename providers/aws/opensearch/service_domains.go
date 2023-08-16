@@ -2,6 +2,7 @@ package opensearch
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -32,6 +33,12 @@ func ServiceDomains(ctx context.Context, client ProviderClient) ([]Resource, err
 		}
 		domain := domainConfig.DomainStatus
 
+		jsonData, err := json.Marshal(domainName)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -41,6 +48,7 @@ func ServiceDomains(ctx context.Context, client ProviderClient) ([]Resource, err
 			Name:       aws.ToString(domain.DomainName),
 			Cost:       0,
 			FetchedAt:  time.Now(),
+			Data:       jsonString,
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/aos/home?region=%s#/opensearch/domains/%s", client.AWSClient.Region, client.AWSClient.Region, aws.ToString(domain.DomainName)),
 		})
 	}

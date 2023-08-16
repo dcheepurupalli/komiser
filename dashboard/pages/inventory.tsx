@@ -31,6 +31,10 @@ export default function Inventory() {
     page,
     goTo,
     tags,
+    json,
+    secrets,
+    variables,
+    sbom,
     handleChange,
     addNewTag,
     removeTag,
@@ -166,6 +170,10 @@ export default function Inventory() {
           page={page}
           updateTags={updateTags}
           tags={tags}
+          json={json}
+          secrets={secrets}
+          variables={variables}
+          sbom={sbom}
           handleChange={handleChange}
           removeTag={removeTag}
           addNewTag={addNewTag}

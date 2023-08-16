@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Resource struct {
 	Id         int64             `json:"id" bun:"id,pk,autoincrement"`
@@ -17,7 +19,11 @@ type Resource struct {
 	Metadata   map[string]string `json:"metadata"`
 	Tags       []Tag             `json:"tags" bun:"tags,default:'[]'"`
 	Link       string            `json:"link" bson:"link"`
-	Value      string            `bun:",scanonly"` //to be deprecated
+	Data       string            `json:"data" bun:"data,default:'{}'"`
+	Value      string            `bun:",scanonly"` // to be deprecated
+	Secrets    []KeyValuePair    `json:"secrets" bun:"secrets,default:'[]'"`
+	Variables  []KeyValuePair    `json:"variables" bun:"variables,default:'[]'"`
+	SBOM       string            `json:"sbom" bun:"sbom,default:'{}'"`
 }
 
 type Tag struct {
@@ -28,4 +34,10 @@ type Tag struct {
 type BulkUpdateTag struct {
 	Tags      []Tag `json:"tags"`
 	Resources []int `json:"resources"`
+}
+
+type KeyValuePair struct {
+	Key        string `json:"key"`
+	Value      string `json:"value"`
+	Visibility string `json:"visibility"`
 }

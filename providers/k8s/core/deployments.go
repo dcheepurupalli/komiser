@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	log "github.com/siruspen/logrus"
@@ -31,6 +33,12 @@ func Deployments(ctx context.Context, client providers.ProviderClient) ([]Resour
 				})
 			}
 
+			jsonData, err := json.Marshal(deploy)
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "Kubernetes",
 				Account:    client.Name,
@@ -41,6 +49,7 @@ func Deployments(ctx context.Context, client providers.ProviderClient) ([]Resour
 				Cost:       0,
 				CreatedAt:  deploy.CreationTimestamp.Time,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Tags:       tags,
 			})
 		}

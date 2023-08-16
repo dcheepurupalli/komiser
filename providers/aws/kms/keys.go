@@ -2,6 +2,7 @@ package kms
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -55,6 +56,12 @@ func Keys(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				}
 			}
 
+			jsonData, err := json.Marshal(key)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -65,6 +72,7 @@ func Keys(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Name:       *key.KeyId,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/kms/home?region=%s#/kms/keys/%s", client.AWSClient.Region, client.AWSClient.Region, *key.KeyId),
 			})
 		}

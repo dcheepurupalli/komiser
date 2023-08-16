@@ -104,10 +104,16 @@ func Instances(ctx context.Context, client providers.ProviderClient) ([]models.R
 					break
 				}
 
-				//log.Printf("Hourly cost RDS: %f", hourlyCost)
+				// log.Printf("Hourly cost RDS: %f", hourlyCost)
 			}
 
 			monthlyCost := float64(hourlyUsage) * hourlyCost
+
+			jsonData, err := json.Marshal(instance)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
 
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
@@ -119,6 +125,7 @@ func Instances(ctx context.Context, client providers.ProviderClient) ([]models.R
 				Name:       _instanceName,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/rds/home?region=%s#database:id=%s", client.AWSClient.Region, client.AWSClient.Region, *instance.DBInstanceIdentifier),
 			})
 		}

@@ -8,7 +8,7 @@ function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex flex-col gap-6">
       <p className="flex items-center gap-2 text-lg font-medium text-black-900">
-        Dashboard overview
+        Dashboard
       </p>
       {children}
     </div>

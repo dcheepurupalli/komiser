@@ -20,22 +20,22 @@ type LayoutProps = {
 function Layout({ children }: LayoutProps) {
   const { displayBanner, dismissBanner, githubStars } = useGithubStarBanner();
   const { loading, data, error, hasNoAccounts, fetch } = useGlobalStats();
-  const { telemetry } = useTelemetry();
+  // const { telemetry } = useTelemetry();
   const router = useRouter();
   const canRender = !error && !hasNoAccounts;
 
-  useEffect(() => {
-    if (telemetry?.telemetry_enabled && environment.production) {
-      Sentry.init({
-        dsn: environment.SENTRY_URL,
-        integrations: [new BrowserTracing()],
+  // useEffect(() => {
+  //   if (telemetry?.telemetry_enabled && environment.production) {
+  //     Sentry.init({
+  //       dsn: environment.SENTRY_URL,
+  //       integrations: [new BrowserTracing()],
 
-        // We recommend adjusting this value in production, or using tracesSampler
-        // for finer control
-        tracesSampleRate: 1.0
-      });
-    }
-  }, [telemetry]);
+  //       // We recommend adjusting this value in production, or using tracesSampler
+  //       // for finer control
+  //       tracesSampleRate: 1.0
+  //     });
+  //   }
+  // }, [telemetry]);
 
   const betaFlagOnboardingWizard = true; // To test the onboarding wizard feature, set this beta-flag to true
   const isOnboarding =

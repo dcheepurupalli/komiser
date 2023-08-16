@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/civo/civogo"
 	"github.com/digitalocean/godo"
+	"github.com/google/go-github/v53/github"
 	"github.com/linode/linodego"
 	"github.com/oracle/oci-go-sdk/common"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -31,6 +32,7 @@ type ProviderClient struct {
 	ScalewayClient     *scw.Client
 	MongoDBAtlasClient *mongodbatlas.Client
 	GCPClient          *GCPClient
+	GithubClient       *github.Client
 	Name               string
 }
 

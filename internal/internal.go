@@ -37,6 +37,7 @@ import (
 	"github.com/tailwarden/komiser/providers/civo"
 	do "github.com/tailwarden/komiser/providers/digitalocean"
 	"github.com/tailwarden/komiser/providers/gcp"
+	"github.com/tailwarden/komiser/providers/github"
 	k8s "github.com/tailwarden/komiser/providers/k8s"
 	linode "github.com/tailwarden/komiser/providers/linode"
 	"github.com/tailwarden/komiser/providers/mongodbatlas"
@@ -47,14 +48,63 @@ import (
 	"github.com/uptrace/bun"
 )
 
-var Version = "Unknown"
-var GoVersion = runtime.Version()
-var Buildtime = "Unknown"
-var Commit = "Unknown"
-var Os = runtime.GOOS
-var Arch = runtime.GOARCH
-var db *bun.DB
-var analytics utils.Analytics
+var (
+	Version   = "Unknown"
+	GoVersion = runtime.Version()
+	Buildtime = "Unknown"
+	Commit    = "Unknown"
+	Os        = runtime.GOOS
+	Arch      = runtime.GOARCH
+	db        *bun.DB
+	analytics utils.Analytics
+)
+
+type Data struct {
+	VpcId               string `json:"VpcId"`
+	SubnetId            string `json:"SubnetId"`
+	OwnerId             string `json:"OwnerId"`
+	AvailabilityZone    string `json:"AvailabilityZone"`
+	BlockDeviceMappings []struct {
+		Ebs struct {
+			Status              string    `json:"Status"`
+			VolumeID            string    `json:"VolumeId"`
+			AttachTime          time.Time `json:"AttachTime"`
+			DeleteOnTermination bool      `json:"DeleteOnTermination"`
+		} `json:"Ebs"`
+		DeviceName string `json:"DeviceName"`
+	}
+	IamInstanceProfile struct {
+		Id  string `json:"Id"`
+		Arn string `json:"Arn"`
+	}
+	NetworkInterfaces []struct {
+		Attachment struct {
+			AttachmentId string `json:"AttachmentId"`
+		}
+		NetworkInterfaceId string `json:"NetworkInterfaceId"`
+		IamInstanceProfile struct {
+			Id  string `json:"Id"`
+			Arn string `json:"Arn"`
+		}
+	}
+	SecurityGroups []struct {
+		GroupId   string `json:"GroupId"`
+		GroupName string `json:"GroupName"`
+	}
+}
+
+type DataRDS struct {
+	KmsKeyId          string `json:"KmsKeyId"`
+	VpcSecurityGroups []struct {
+		Status             string `json:"Status"`
+		VpcSecurityGroupId string `json:"VpcSecurityGroupId"`
+	}
+}
+
+type Tag struct {
+	Key   string `json:"Key"`
+	Value string `json:"Value"`
+}
 
 func Exec(address string, port int, configPath string, telemetry bool, a utils.Analytics, regions []string, cmd *cobra.Command) error {
 	analytics = a
@@ -119,6 +169,8 @@ func Exec(address string, port int, configPath string, telemetry bool, a utils.A
 
 	go checkUpgrade()
 
+	go updateEdgesFromResources(ctx)
+
 	err = runServer(address, port, telemetry, *cfg)
 	if err != nil {
 		return err
@@ -138,6 +190,159 @@ func checkIfAlertsExist(ctx context.Context) (bool, []models.Alert) {
 		return true, alerts
 	}
 	return false, alerts
+}
+
+func updateEdgesFromResources(ctx context.Context) error {
+	resources := make([]models.Resource, 0)
+
+	err := db.NewRaw("SELECT * FROM resources WHERE provider LIKE '%AWS%' AND account like '%scdt-poc%'").Scan(ctx, &resources)
+	if err != nil {
+		log.WithError(err).Error("scan failed")
+	}
+
+	for _, resource := range resources {
+		if resource.Service == "EC2" {
+
+			var data Data
+			err := json.Unmarshal([]byte(resource.Data), &data)
+			if err != nil {
+				fmt.Println("Error parsing JSON:", err)
+				return err
+			}
+			vpcID := data.VpcId
+			subnetID := data.SubnetId
+			volumeID := data.BlockDeviceMappings[0].Ebs.VolumeID
+			networkInterfaceID := data.NetworkInterfaces[0].NetworkInterfaceId
+			iamProfileID := data.NetworkInterfaces[0].IamInstanceProfile.Arn
+			securityGroupID := data.SecurityGroups[0].GroupId
+
+			vpcIdResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", vpcID)).Scan(ctx, &vpcIdResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			subnetIdResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", subnetID)).Scan(ctx, &subnetIdResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			volumeIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", volumeID)).Scan(ctx, &volumeIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			networkInterfaceIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", networkInterfaceID)).Scan(ctx, &networkInterfaceIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			iamProfileIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE name LIKE ?", fmt.Sprintf("%%%s%%", iamProfileID)).Scan(ctx, &iamProfileIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			securityGroupIDResource := make([]models.Resource, 0)
+			err = db.NewRaw("SELECT * FROM resources WHERE resource_id LIKE ?", fmt.Sprintf("%%%s%%", securityGroupID)).Scan(ctx, &securityGroupIDResource)
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   subnetIdResource[0].Id,
+				Name:   "Subnet",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   vpcIdResource[0].Id,
+				Name:   "VPC",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   volumeIDResource[0].Id,
+				Name:   "Volume",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   networkInterfaceIDResource[0].Id,
+				Name:   "Network Interface",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			_, err = db.NewInsert().Model(&models.Edges{
+				Source: resource.Id,
+				Dest:   iamProfileIDResource[0].Id,
+				Name:   "IAM",
+			}).Exec(ctx)
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+
+			// For loop to add all security groups
+			for _, securityGroup := range securityGroupIDResource {
+				_, _ = db.NewInsert().Model(&models.Edges{
+					Source: resource.Id,
+					Dest:   securityGroup.Id,
+					Name:   "Security Group",
+				}).Exec(ctx)
+			}
+
+			if err != nil {
+				log.WithError(err).Error("scan failed")
+			}
+		}
+		// if resource.Service == "RDS" {
+		// 	var data Data
+		// 	err := json.Unmarshal([]byte(resource.Data), &data)
+		// 	if err != nil {
+		// 		fmt.Println("Error parsing JSON:", err)
+		// 		return err
+		// 	}
+
+		// 	securityGroupID := data.SecurityGroups[0].GroupId
+
+		// 	securityGroupIDResource := make([]models.Resource, 0)
+		// 	err = db.NewRaw("SELECT * FROM resources WHERE resource_id LIKE ?", fmt.Sprintf("%%%s%%", securityGroupID)).Scan(ctx, &securityGroupIDResource)
+		// 	if err != nil {
+		// 		log.WithError(err).Error("scan failed")
+		// 	}
+
+		// 	for _, securityGroup := range securityGroupIDResource {
+		// 		_, _ = db.NewInsert().Model(&models.Edges{
+		// 			Source: resource.Id,
+		// 			Dest:   securityGroup.Id,
+		// 			Name:   "Security Group",
+		// 		}).Exec(ctx)
+		// 	}
+
+		// }
+	}
+
+	return nil
 }
 
 func loggingMiddleware() gin.HandlerFunc {
@@ -320,6 +525,8 @@ func triggerFetchingWorfklow(ctx context.Context, client providers.ProviderClien
 		mongodbatlas.FetchResources(ctx, client, db, telemetry, analytics)
 	case "GCP":
 		gcp.FetchResources(ctx, client, db, telemetry, analytics)
+	case "Github":
+		github.FetchResources(ctx, client, db, telemetry, analytics)
 	}
 }
 
@@ -347,6 +554,8 @@ func fetchResources(ctx context.Context, clients []providers.ProviderClient, reg
 			go triggerFetchingWorfklow(ctx, client, "MongoDBAtlas", telemetry, regions)
 		} else if client.GCPClient != nil {
 			go triggerFetchingWorfklow(ctx, client, "GCP", telemetry, regions)
+		} else if client.GithubClient != nil {
+			go triggerFetchingWorfklow(ctx, client, "Github", telemetry, regions)
 		}
 	}
 	return nil
@@ -358,7 +567,7 @@ func checkUpgrade() {
 		Version string `json:"tag_name"`
 	}
 
-	var myClient = &http.Client{Timeout: 5 * time.Second}
+	myClient := &http.Client{Timeout: 5 * time.Second}
 	r, err := myClient.Get(url)
 	if err != nil {
 		log.Warnf("Failed to check for new version: %s", err)
@@ -488,7 +697,6 @@ func hitSlackWebhook(viewName string, port int, viewId int, resources int, cost 
 	if err != nil {
 		log.Warn(err)
 	}
-
 }
 
 func checkingAlerts(ctx context.Context, cfg models.Config, telemetry bool, port int, alerts []models.Alert) {

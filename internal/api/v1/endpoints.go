@@ -46,6 +46,8 @@ func Endpoints(ctx context.Context, telemetry bool, analytics utils.Analytics, d
 
 	router.GET("/global/stats", api.DashboardStatsHandler)
 	router.POST("/global/resources", api.ResourcesBreakdownStatsHandler)
+	router.GET("/global/resources", api.GetAllResourcesHandler)
+	router.GET("/global/edges", api.GetAllEdgesHandler)
 	router.GET("/global/locations", api.LocationBreakdownStatsHandler)
 	router.POST("/costs/explorer", api.CostBreakdownHandler)
 

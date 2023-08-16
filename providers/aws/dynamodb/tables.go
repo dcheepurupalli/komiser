@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -47,6 +48,12 @@ func Tables(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			}
 		}
 
+		jsonData, err := json.Marshal(table)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -56,6 +63,7 @@ func Tables(ctx context.Context, client ProviderClient) ([]Resource, error) {
 			Name:       table,
 			Cost:       0,
 			Tags:       tags,
+			Data:       jsonString,
 			FetchedAt:  time.Now(),
 			Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/dynamodbv2/home?region=%s#table?initialTagKey=&name=%s", client.AWSClient.Region, client.AWSClient.Region, table),
 		})

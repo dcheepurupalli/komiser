@@ -2,7 +2,9 @@ package compute
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -75,6 +77,12 @@ func Instances(ctx context.Context, client providers.ProviderClient) ([]models.R
 				logrus.WithError(err).Errorf("failed to calculate cost")
 			}
 
+			jsonData, err := json.Marshal(instance)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "GCP",
 				Account:    client.Name,
@@ -85,6 +93,7 @@ func Instances(ctx context.Context, client providers.ProviderClient) ([]models.R
 				Cost:       cost,
 				FetchedAt:  time.Now(),
 				Tags:       tags,
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https://console.cloud.google.com/compute/instancesDetail/zones/%s/instances/%s?project=%s", zone, instance.GetName(), client.GCPClient.Credentials.ProjectID),
 			})
 		}

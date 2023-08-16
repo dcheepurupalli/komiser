@@ -2,7 +2,9 @@ package certficate
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"time"
 
@@ -42,6 +44,12 @@ func Certificates(ctx context.Context, client providers.ProviderClient) ([]model
 
 		certificateNameWithoutProjectAndLocation := extractCertificateName(certificate.Name)
 
+		jsonData, err := json.Marshal(certificate)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, models.Resource{
 			Provider:   "GCP",
 			Account:    client.Name,
@@ -52,6 +60,7 @@ func Certificates(ctx context.Context, client providers.ProviderClient) ([]model
 			Cost:       0,
 			Metadata:   certificate.Labels,
 			FetchedAt:  time.Now(),
+			Data:       jsonString,
 			Link:       fmt.Sprintf("https://console.cloud.google.com/security/ccm/certificates/details/global/name/%s?project=%s", certificateNameWithoutProjectAndLocation, client.GCPClient.Credentials.ProjectID),
 		})
 
@@ -65,7 +74,6 @@ func Certificates(ctx context.Context, client providers.ProviderClient) ([]model
 	}).Info("Fetched resources")
 
 	return resources, nil
-
 }
 
 func extractCertificateName(s string) string {

@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -36,6 +37,12 @@ func Snapshots(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				})
 			}
 
+			jsonData, err := json.Marshal(snapshot)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resource := Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -44,6 +51,7 @@ func Snapshots(ctx context.Context, client ProviderClient) ([]Resource, error) {
 				Region:     client.AWSClient.Region,
 				Name:       aws.ToString(snapshot.SnapshotId),
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				CreatedAt:  *snapshot.StartTime,
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ec2/home?region=%s#napshotDetails:snapshotId=%s", client.AWSClient.Region, client.AWSClient.Region, *snapshot.SnapshotId),

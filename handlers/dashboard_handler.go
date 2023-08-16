@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/tailwarden/komiser/models"
+	. "github.com/tailwarden/komiser/models"
 	"github.com/tailwarden/komiser/utils"
 )
 
@@ -116,6 +117,26 @@ func (handler *ApiHandler) ResourcesBreakdownStatsHandler(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, segments)
+}
+
+func (handler *ApiHandler) GetAllResourcesHandler(c *gin.Context) {
+	resources := make([]Resource, 0)
+
+	err := handler.db.NewRaw("SELECT * FROM resources WHERE provider LIKE '%AWS%' AND account like '%scdt-poc%'").Scan(handler.ctx, &resources)
+	if err != nil {
+		logrus.WithError(err).Error("scan failed")
+	}
+	c.JSON(http.StatusOK, resources)
+}
+
+func (handler *ApiHandler) GetAllEdgesHandler(c *gin.Context) {
+	edges := make([]Edges, 0)
+
+	err := handler.db.NewRaw("SELECT * FROM edges").Scan(handler.ctx, &edges)
+	if err != nil {
+		logrus.WithError(err).Error("scan failed")
+	}
+	c.JSON(http.StatusOK, edges)
 }
 
 func (handler *ApiHandler) LocationBreakdownStatsHandler(c *gin.Context) {

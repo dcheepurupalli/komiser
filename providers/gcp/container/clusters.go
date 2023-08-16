@@ -2,7 +2,9 @@ package container
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -52,6 +54,12 @@ func Clusters(ctx context.Context, client providers.ProviderClient) ([]models.Re
 
 		zone := utils.GcpExtractZoneFromURL(cluster.GetLocation())
 
+		jsonData, err := json.Marshal(cluster)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, models.Resource{
 			Provider:   "GCP",
 			Account:    client.Name,
@@ -61,6 +69,7 @@ func Clusters(ctx context.Context, client providers.ProviderClient) ([]models.Re
 			Name:       cluster.GetName(),
 			FetchedAt:  time.Now(),
 			Tags:       tags,
+			Data:       jsonString,
 			Link:       fmt.Sprintf("https://console.cloud.google.com/kubernetes/clusters/details/%s/%s/details?project=%s", zone, cluster.GetName(), client.GCPClient.Credentials.ProjectID),
 		})
 	}

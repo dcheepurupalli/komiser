@@ -2,6 +2,7 @@ package ecr
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -39,6 +40,12 @@ func Repositories(ctx context.Context, client ProviderClient) ([]Resource, error
 				}
 			}
 
+			jsonData, err := json.Marshal(repository)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -48,6 +55,7 @@ func Repositories(ctx context.Context, client ProviderClient) ([]Resource, error
 				Name:       *repository.RepositoryName,
 				Cost:       0.10,
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/ecr/repositories/%s", client.AWSClient.Region, *repository.RepositoryName),
 			})

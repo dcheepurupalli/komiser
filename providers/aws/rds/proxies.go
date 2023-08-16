@@ -2,6 +2,7 @@ package rds
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -42,6 +43,12 @@ func Proxies(ctx context.Context, client providers.ProviderClient) ([]models.Res
 			hourlyCost := 0.0
 			monthlyCost := float64(hourlyUsage) * hourlyCost
 
+			jsonData, err := json.Marshal(proxy)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, models.Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -51,6 +58,7 @@ func Proxies(ctx context.Context, client providers.ProviderClient) ([]models.Res
 				Cost:       monthlyCost,
 				Name:       _ProxyName,
 				FetchedAt:  time.Now(),
+				Data:       jsonString,
 				Link:       fmt.Sprintf("https:/%s.console.aws.amazon.com/rds/home?region=%s#proxies:id=%s", client.AWSClient.Region, client.AWSClient.Region, *proxy.DBProxyName),
 			})
 		}

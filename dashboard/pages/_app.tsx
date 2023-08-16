@@ -1,6 +1,7 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import Layout from '../components/layout/Layout';
+import 'vis-network/styles/vis-network.css';
 
 const printHiringMessage = () => {
   // eslint-disable-next-line no-console

@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -37,6 +38,12 @@ func InstanceProfiles(ctx context.Context, client ProviderClient) ([]Resource, e
 			})
 		}
 
+		jsonData, err := json.Marshal(instanceprofile)
+		if err != nil {
+			log.Printf("ERROR: Failed to marshall json: %v", err)
+		}
+		jsonString := string(jsonData)
+
 		resources = append(resources, Resource{
 			Provider:   "AWS",
 			Account:    client.Name,
@@ -47,6 +54,7 @@ func InstanceProfiles(ctx context.Context, client ProviderClient) ([]Resource, e
 			Cost:       0,
 			CreatedAt:  *instanceprofile.CreateDate,
 			Tags:       tags,
+			Data:       jsonString,
 			FetchedAt:  time.Now(),
 		})
 

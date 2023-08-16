@@ -2,6 +2,7 @@ package cloudwatch
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -45,6 +46,12 @@ func Dashboards(ctx context.Context, client ProviderClient) ([]Resource, error) 
 
 			cost := calculateDashboardCost(index + 1)
 
+			jsonData, err := json.Marshal(dashboard)
+			if err != nil {
+				log.Printf("ERROR: Failed to marshall json: %v", err)
+			}
+			jsonString := string(jsonData)
+
 			resources = append(resources, Resource{
 				Provider:   "AWS",
 				Account:    client.Name,
@@ -54,6 +61,7 @@ func Dashboards(ctx context.Context, client ProviderClient) ([]Resource, error) 
 				Name:       *dashboard.DashboardName,
 				Cost:       cost,
 				Tags:       tags,
+				Data:       jsonString,
 				FetchedAt:  time.Now(),
 				Link:       fmt.Sprintf("https://%s.console.aws.amazon.com/cloudwatch/home?region=%s#dashboards:name=%s", client.AWSClient.Region, client.AWSClient.Region, *dashboard.DashboardName),
 			})

@@ -1,3 +1,5 @@
+import { JsonView, darkStyles, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 import formatNumber from '../../../utils/formatNumber';
 import providers from '../../../utils/providerHelper';
 import Button from '../../button/Button';
@@ -8,7 +10,8 @@ import SidepanelTabs from '../../sidepanel/SidepanelTabs';
 import {
   InventoryItem,
   Pages,
-  Tag
+  Tag,
+  Secrets
 } from '../hooks/useInventory/types/useInventoryTypes';
 import InventoryTagWrapper from './InventoryTagWrapper';
 
@@ -19,6 +22,10 @@ type InventorySidePanelProps = {
   page: Pages;
   updateTags: (action?: 'delete') => void;
   tags: Tag[] | [] | undefined;
+  json: string;
+  sbom: string;
+  variables: Secrets[] | [] | undefined;
+  secrets: Secrets[] | [] | undefined;
   handleChange: (newData: Partial<Tag>, id?: number) => void;
   removeTag: (id: number) => void;
   addNewTag: () => void;
@@ -36,6 +43,10 @@ function InventorySidePanel({
   page,
   updateTags,
   tags,
+  json,
+  secrets,
+  sbom,
+  variables,
   handleChange,
   removeTag,
   addNewTag,
@@ -112,7 +123,11 @@ function InventorySidePanel({
         </div>
 
         {/* Tabs */}
-        <SidepanelTabs goTo={goTo} page={page} tabs={['Tags']} />
+        <SidepanelTabs
+          goTo={goTo}
+          page={page}
+          tabs={['Tags', 'Json', 'Secrets', 'Variables', 'SBOM']}
+        />
 
         {/* Tags form */}
         <div>
@@ -239,6 +254,60 @@ function InventorySidePanel({
                 </div>
               </div>
             </>
+          )}
+
+          {page === 'json' && (
+            <div className="flex flex-col gap-6 pt-2">
+              <div className="flex flex-col gap-2">
+                <JsonView
+                  data={JSON.parse(json)}
+                  shouldInitiallyExpand={level => true}
+                  style={defaultStyles}
+                />
+              </div>
+            </div>
+          )}
+
+          {page === 'sbom' && (
+            <div className="flex flex-col gap-6 pt-2">
+              <div className="flex flex-col gap-2">
+                <JsonView
+                  data={JSON.parse(sbom)}
+                  shouldInitiallyExpand={level => true}
+                  style={defaultStyles}
+                />
+              </div>
+            </div>
+          )}
+
+          {page === 'secrets' && (
+            <div className="flex flex-col gap-6 pt-2">
+              {secrets &&
+                secrets.map((tag, id) => (
+                  <div key={id} className="flex items-center gap-4">
+                    <InventoryTagWrapper
+                      tag={tag}
+                      id={id}
+                      handleChange={handleChange}
+                    />
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {page === 'variables' && (
+            <div className="flex flex-col gap-6 pt-2">
+              {variables &&
+                variables.map((tag, id) => (
+                  <div key={id} className="flex items-center gap-4">
+                    <InventoryTagWrapper
+                      tag={tag}
+                      id={id}
+                      handleChange={handleChange}
+                    />
+                  </div>
+                ))}
+            </div>
           )}
         </div>
       </Sidepanel>
