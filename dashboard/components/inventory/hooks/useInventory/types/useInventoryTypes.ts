@@ -69,7 +69,7 @@ export type Pages =
   | 'delete'
   | 'json'
   | 'secrets'
-  | 'varaibles'
+  | 'variables'
   | 'sbom';
 
 export type View = {

@@ -22,7 +22,7 @@ type InventorySidePanelProps = {
   page: Pages;
   updateTags: (action?: 'delete') => void;
   tags: Tag[] | [] | undefined;
-  json: string;
+  json: any;
   sbom: string;
   variables: Secrets[] | [] | undefined;
   secrets: Secrets[] | [] | undefined;

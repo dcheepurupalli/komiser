@@ -7,6 +7,7 @@ export type Vertices = {
   name: string;
   service: string;
   data: any;
+  color: string;
 };
 
 export type Edges = {
