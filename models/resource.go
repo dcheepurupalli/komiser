@@ -24,6 +24,7 @@ type Resource struct {
 	Secrets    []KeyValuePair    `json:"secrets" bun:"secrets,default:'[]'"`
 	Variables  []KeyValuePair    `json:"variables" bun:"variables,default:'[]'"`
 	SBOM       string            `json:"sbom" bun:"sbom,default:'{}'"`
+	Unmanaged  string            `json:"gitleaks" bun:"gitleaks,default:'[]'"`
 }
 
 type Tag struct {

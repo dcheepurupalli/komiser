@@ -10,6 +10,10 @@ function Navbar() {
   const nav = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Inventory', href: '/inventory' },
+    { label: 'Code', href: '/code' },
+    { label: 'Operations', href: '/operations' },
+    { label: 'SaaS', href: '/saas' },
+    { label: 'Security', href: '/security' },
     { label: 'Map', href: '/map' }
   ];
   return (
@@ -44,97 +48,30 @@ function Navbar() {
       <div className="flex gap-4 text-sm font-medium text-black-900 lg:gap-10">
         <a
           className="hidden items-center gap-2 transition-colors hover:text-primary md:flex"
-          href="https://docs.komiser.io/docs/intro?utm_source=komiser&utm_medium=referral&utm_campaign=static"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeMiterlimit="10"
-              strokeWidth="2"
-              d="M21 7v10c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V7c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5z"
-            ></path>
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeMiterlimit="10"
-              strokeWidth="2"
-              d="M14.5 4.5v2c0 1.1.9 2 2 2h2M10 13l-2 2 2 2M14 13l2 2-2 2"
-            ></path>
-          </svg>
-          Docs
-        </a>
-        <a
-          className="hidden items-center gap-2 transition-colors hover:text-primary md:flex"
           href="https://www.tailwarden.com/changelog?utm_source=komiser&utm_medium=referral&utm_campaign=static"
           target="_blank"
           rel="noopener noreferrer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
             fill="none"
             viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+            className="h-5 w-5"
           >
             <path
-              stroke="currentColor"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeMiterlimit="10"
-              strokeWidth="2"
-              d="M8 2v3M16 2v3M7 11h8M7 15h5M15 22H9c-5 0-6-2.06-6-6.18V9.65c0-4.7 1.67-5.96 5-6.15h8c3.33.18 5 1.45 5 6.15V16"
-            ></path>
+              d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z"
+            />
             <path
-              stroke="currentColor"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 16l-6 6v-3c0-2 1-3 3-3h3z"
-            ></path>
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
           </svg>
-          Changelog
-        </a>
-        <a
-          className="hidden items-center gap-2 transition-colors hover:text-primary md:flex"
-          href="https://tally.so/r/mZjY40"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="none"
-            viewBox="0 0 24 25"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M11 2.75H9c-5 0-7 2-7 7v6c0 5 2 7 7 7h6c5 0 7-2 7-7v-2"
-            ></path>
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeMiterlimit="10"
-              strokeWidth="2"
-              d="M16.04 3.77l-7.88 7.88c-.3.3-.6.89-.66 1.32l-.43 3.01c-.16 1.09.61 1.85 1.7 1.7l3.01-.43c.42-.06 1.01-.36 1.32-.66l7.88-7.88c1.36-1.36 2-2.94 0-4.94-2-2-3.58-1.36-4.94 0zM14.91 4.9a7.144 7.144 0 004.94 4.94"
-            ></path>
-          </svg>
-          Leave feedback
+          Settings
         </a>
         <a
           className="flex items-center gap-2 rounded-lg bg-[#5865F2] px-4 py-2 text-white transition-colors hover:bg-[#4f5be2]"
@@ -154,7 +91,7 @@ function Navbar() {
               d="M18.93 4.935a16.457 16.457 0 00-4.07-1.266.062.062 0 00-.066.031c-.175.314-.37.723-.506 1.044a15.183 15.183 0 00-4.573 0c-.136-.328-.338-.73-.515-1.044a.064.064 0 00-.065-.031 16.413 16.413 0 00-4.07 1.266.058.058 0 00-.028.023c-2.593 3.885-3.303 7.674-2.954 11.417a.069.069 0 00.026.047 16.565 16.565 0 004.994 2.531.065.065 0 00.07-.023c.385-.527.728-1.082 1.022-1.666a.064.064 0 00-.035-.089 10.906 10.906 0 01-1.56-.745.064.064 0 01-.007-.107c.105-.079.21-.16.31-.244a.061.061 0 01.065-.008c3.273 1.498 6.817 1.498 10.051 0a.062.062 0 01.066.008c.1.082.204.165.31.244a.064.064 0 01-.005.107c-.499.292-1.017.538-1.561.744a.064.064 0 00-.034.09c.3.583.643 1.139 1.02 1.666a.063.063 0 00.07.023 16.51 16.51 0 005.003-2.531.065.065 0 00.026-.047c.417-4.326-.699-8.084-2.957-11.416a.05.05 0 00-.026-.024zM8.684 14.096c-.985 0-1.797-.907-1.797-2.022 0-1.114.796-2.021 1.797-2.021 1.01 0 1.813.915 1.798 2.021 0 1.115-.796 2.022-1.798 2.022zm6.646 0c-.986 0-1.797-.907-1.797-2.022 0-1.114.796-2.021 1.797-2.021 1.009 0 1.813.915 1.797 2.021 0 1.115-.788 2.022-1.797 2.022z"
             ></path>
           </svg>
-          Join our Discord
+          Community (Discord)
         </a>
       </div>
     </nav>

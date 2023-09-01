@@ -35,6 +35,7 @@ export default function Inventory() {
     secrets,
     variables,
     sbom,
+    gitleaks,
     handleChange,
     addNewTag,
     removeTag,
@@ -174,6 +175,7 @@ export default function Inventory() {
           secrets={secrets}
           variables={variables}
           sbom={sbom}
+          gitleaks={gitleaks}
           handleChange={handleChange}
           removeTag={removeTag}
           addNewTag={addNewTag}

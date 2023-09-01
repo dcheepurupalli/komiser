@@ -5,16 +5,37 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"net/http"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v53/github"
+	"github.com/google/go-github/v54/github"
 	"github.com/tailwarden/komiser/models"
 	. "github.com/tailwarden/komiser/models"
 	"github.com/tailwarden/komiser/providers"
 )
+
+type Gitleaks struct {
+	Description string   `json:"Description"`
+	StartLine   int      `json:"StartLine"`
+	EndLine     int      `json:"EndLine"`
+	StartColumn int      `json:"StartColumn"`
+	EndColumn   int      `json:"EndColumn"`
+	Match       string   `json:"Match"`
+	Secret      string   `json:"Secret"`
+	File        string   `json:"File"`
+	SymlinkFile string   `json:"SymlinkFile"`
+	Commit      string   `json:"Commit"`
+	Entropy     float64  `json:"Entropy"`
+	Author      string   `json:"Author"`
+	Email       string   `json:"Email"`
+	Date        string   `json:"Date"`
+	Message     string   `json:"Message"`
+	Tags        []string `json:"Tags"`
+	RuleID      string   `json:"RuleID"`
+	Fingerprint string   `json:"Fingerprint"`
+}
 
 func Repositories(ctx context.Context, client providers.ProviderClient) ([]models.Resource, error) {
 	resources := make([]models.Resource, 0)
@@ -40,10 +61,35 @@ func Repositories(ctx context.Context, client providers.ProviderClient) ([]model
 			return resources, err
 		}
 
-		sbom, err := GetRepoDependencyGraphSBOM(ctx, client, repository)
+		// SBOM Changes
+		sbom, _, err := client.GithubClient.DependencyGraph.GetSBOM(ctx, client.Name, *repository.Name)
+		if err != nil {
+			fmt.Println("Error getting SBOM:", err)
+			// return resources, err
+		}
+		sbomJson, err := json.MarshalIndent(sbom, "", "    ")
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		sbomString := string(sbomJson)
+		// fmt.Println(sbomString)
+
+		// Git Leaks Cloning repository
+		err = os.MkdirAll("./repos", os.ModePerm)
+		if err != nil {
+			fmt.Println("Error creating repos directory:", err)
+			return resources, err
+		}
+
+		gitLeaks, err := cloneRepositoryInTemp(ctx, client, repository)
 		if err != nil {
 			return resources, err
 		}
+		gitLeaksJson, err := json.Marshal(gitLeaks)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		gitLeaksString := string(gitLeaksJson)
 
 		// Convert secrets to key-value pairs
 		secretPairs := make([]KeyValuePair, 0)
@@ -99,59 +145,65 @@ func Repositories(ctx context.Context, client providers.ProviderClient) ([]model
 			Link:       *repository.URL,
 			Secrets:    secretPairs,
 			Variables:  variablePairs,
-			SBOM:       sbom,
+			SBOM:       sbomString,
+			Unmanaged:  gitLeaksString,
 		})
 	}
 
 	return resources, nil
 }
 
-func sendRequest(method, url string, headers map[string]string, body []byte) (*http.Response, error) {
-	req, err := http.NewRequest(method, url, nil)
+// Code is written temporary not following best practices
+func cloneRepositoryInTemp(ctx context.Context, client providers.ProviderClient, repository *github.Repository) ([]Gitleaks, error) {
+	repoName := *repository.Name
+	repoURL := *repository.CloneURL
+
+	// Cloning the repository
+	fmt.Printf("Cloning repository %s...\n", repoName)
+	cmd := exec.Command("git", "clone", repoURL)
+	cmd.Dir = "./repos"
+	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		fmt.Println("Error cloning repository:", err)
 	}
 
-	// Set request headers
-	for key, value := range headers {
-		req.Header.Set(key, value)
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Running gitleaks
+	fmt.Printf("Running gitleaks on repository %s...\n", repoName)
+	cmd = exec.Command("gitleaks", "detect", "-s", ".", "-r", "gitleaks-report.json", "-f", "json")
+	cmd.Dir = fmt.Sprintf("./repos/%s", repoName)
+	// resolve below error
+	_, err = cmd.CombinedOutput()
 	if err != nil {
-		return nil, err
+		fmt.Println("Error running gitleaks:", err)
 	}
 
-	return resp, nil
-}
-
-func GetRepoDependencyGraphSBOM(ctx context.Context, client providers.ProviderClient, repository *github.Repository) (string, error) {
-	// Set the necessary headers
-	headers := map[string]string{
-		"Accept":       "application/vnd.github+json",
-		"X-GitHub-Api": "2022-11-28",
-	}
-
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/dependency-graph/sbom", client.Name, *repository.Name)
-
-	// Send GET request
-	resp, err := sendRequest("GET", url, headers, nil)
+	// Read the captured JSON report
+	reportBytes, err := ioutil.ReadFile(fmt.Sprintf("./repos/%s/gitleaks-report.json", repoName))
 	if err != nil {
-		log.Fatalln("Request error:", err)
-	}
-	defer resp.Body.Close()
-
-	// Check the response status code
-	if resp.StatusCode != http.StatusOK {
-		log.Println("API request failed with status code:", resp.StatusCode)
-		return "", err
+		fmt.Println("Error reading gitleaks report:", err)
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	// Parse the JSON report
+	var gitleaks []Gitleaks
+	err = json.Unmarshal(reportBytes, &gitleaks)
 	if err != nil {
-		log.Fatalln("Error reading response body:", err)
+		fmt.Println("Error decoding gitleaks report:", err)
 	}
-	return string(body), nil
+
+	// Print the parsed JSON report
+	// fmt.Printf("Gitleaks JSON report for repository %s:\n", repoName)
+	// for _, leak := range gitleaks {
+	// 	fmt.Printf("Description: %s\n", leak.Description)
+	// 	fmt.Printf("File: %s\nLine: %d\nOffender: %s\n\n", leak.File, leak.StartLine, leak.Secret)
+	// }
+	// fmt.Printf("Gitleaks output for repository %s:\n%s\n", repoName, output)
+
+	fmt.Printf("Cleaning up repository %s...\n", repoName)
+	cmd = exec.Command("rm", "-rf", repoName)
+	cmd.Dir = "./repos"
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error cleaning up repository:", err)
+	}
+	return gitleaks, nil
 }

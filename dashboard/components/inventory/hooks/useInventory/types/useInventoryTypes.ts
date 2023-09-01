@@ -63,6 +63,7 @@ export type InventoryItem = {
   secrets: Secrets[];
   variables: Secrets[];
   sbom: {};
+  gitleaks: {};
 };
 export type Pages =
   | 'tags'
@@ -70,7 +71,8 @@ export type Pages =
   | 'json'
   | 'secrets'
   | 'variables'
-  | 'sbom';
+  | 'sbom'
+  | 'unmanaged';
 
 export type View = {
   id: number;

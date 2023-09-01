@@ -23,7 +23,8 @@ type InventorySidePanelProps = {
   updateTags: (action?: 'delete') => void;
   tags: Tag[] | [] | undefined;
   json: any;
-  sbom: string;
+  sbom: any;
+  gitleaks: any;
   variables: Secrets[] | [] | undefined;
   secrets: Secrets[] | [] | undefined;
   handleChange: (newData: Partial<Tag>, id?: number) => void;
@@ -46,6 +47,7 @@ function InventorySidePanel({
   json,
   secrets,
   sbom,
+  gitleaks,
   variables,
   handleChange,
   removeTag,
@@ -126,7 +128,7 @@ function InventorySidePanel({
         <SidepanelTabs
           goTo={goTo}
           page={page}
-          tabs={['Tags', 'Json', 'Secrets', 'Variables', 'SBOM']}
+          tabs={['Tags', 'Json', 'Secrets', 'Variables', 'SBOM', 'Unmanaged']}
         />
 
         {/* Tags form */}
@@ -271,11 +273,65 @@ function InventorySidePanel({
           {page === 'sbom' && (
             <div className="flex flex-col gap-6 pt-2">
               <div className="flex flex-col gap-2">
-                <JsonView
-                  data={JSON.parse(sbom)}
-                  shouldInitiallyExpand={level => true}
-                  style={defaultStyles}
-                />
+                <ul className="max-w-md divide-y divide-gray-200 dark:divide-gray-700">
+                  {JSON.parse(sbom).sbom.packages.map(
+                    (item: any, index: number) => (
+                      <li
+                        key={`${index}_${item.name}_${item.versionInfo}`}
+                        className="pb-3 sm:pb-4"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                              {item.name}
+                            </p>
+                            <p className="truncate text-sm text-gray-500 dark:text-gray-400">
+                              {item.versionInfo}
+                            </p>
+                          </div>
+                          <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            {item.licenseConcluded}
+                          </div>
+                        </div>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {page === 'unmanaged' && (
+            <div className="flex flex-col gap-6 pt-2">
+              <div className="flex flex-col gap-2">
+                {Object.keys(gitleaks).map((key: string) => (
+                  <ul
+                    key={`${key}`}
+                    className="max-w-md divide-y divide-gray-200 dark:divide-gray-700"
+                  >
+                    <div className="pb-4 text-xl">{key}</div>
+                    {gitleaks[key].map((item: any, index: number) => (
+                      <li
+                        key={`${index}_${item.Secret}_${item.File}`}
+                        className="pb-3 sm:pb-4"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                              {item.Secret}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {item.File}
+                            </p>
+                          </div>
+                          {/* <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            {item[`'offendingText'`]}
+                          </div> */}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ))}
               </div>
             </div>
           )}

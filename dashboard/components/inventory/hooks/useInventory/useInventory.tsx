@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import _ from 'lodash';
 import settingsService from '../../../../services/settingsService';
 import useToast from '../../../toast/hooks/useToast';
 import useIsVisible from '../useIsVisible/useIsVisible';
@@ -38,6 +39,7 @@ function useInventory() {
   const [page, setPage] = useState<Pages>('tags');
   const [secrets, setSecrets] = useState<Secrets[]>();
   const [json, setJson] = useState({});
+  const [gitleaks, setGitLeaks] = useState({});
   const [variables, setVariables] = useState<Secrets[]>();
   const [sbom, setSBOM] = useState({} as any);
   const [tags, setTags] = useState<Tag[]>();
@@ -486,6 +488,9 @@ function useInventory() {
     setJson(inventoryItem.data);
     setSBOM(inventoryItem.sbom);
 
+    const parsedData = JSON.parse(inventoryItem.gitleaks);
+    setGitLeaks(_.groupBy(parsedData, 'Description'));
+
     if (inventoryItem.secrets && inventoryItem.secrets.length > 0) {
       setSecrets(inventoryItem.secrets);
     } else {
@@ -780,6 +785,7 @@ function useInventory() {
     secrets,
     variables,
     sbom,
+    gitleaks,
     handleChange,
     addNewTag,
     removeTag,

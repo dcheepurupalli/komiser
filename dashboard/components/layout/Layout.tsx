@@ -58,7 +58,7 @@ function Layout({ children }: LayoutProps) {
 
       {!isOnboarding && (
         <>
-          <Banner githubStars={githubStars} />
+          {/* <Banner githubStars={githubStars} /> */}
           <Navbar />
           <main
             className={`relative ${
